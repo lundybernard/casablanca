@@ -1,0 +1,41 @@
+# pyproject.toml
+
+[build-system]
+#requires = ["setuptools", "wheel"]
+#build-backend = "setuptools.build_meta"
+requires = ['poetry-core~=1.0']
+build-backend = 'poetry.core.masonry.api'
+
+[tool.poetry]
+name = 'bat'
+version = '0.0.1'
+description = ''
+authors = ['Lundy Bernard']
+license = 'MIT'
+
+[tool.poetry.scripts]
+bat = 'bat.cli:BATCLI'
+
+[tool.poetry.dependencies]
+python = '^3.8'
+batconf = '*'
+flask = '*'
+connexion = '*'
+requests = '*'
+pyyaml = '*'
+
+[tool.poetry.dev-dependencies]
+setuptools = '*'
+pytest = '*'
+
+
+[tool.pytest.ini_options]
+addopts = "--cov=bat --cov-report html --cov-fail-under=100"
+
+[tool.coverage.run]
+omit = [
+    # ignore coverage for these files
+    "bat/_version.py",
+    "bat/server.py",
+    "bat/tests/common_api_tests.py",
+]
