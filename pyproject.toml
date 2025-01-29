@@ -1,41 +1,84 @@
-# pyproject.toml
-
 [build-system]
-#requires = ["setuptools", "wheel"]
-#build-backend = "setuptools.build_meta"
-requires = ['poetry-core~=1.0']
-build-backend = 'poetry.core.masonry.api'
+requires = ["poetry-core>=1.1.13"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = 'bat'
-version = '0.0.1'
-description = ''
-authors = ['Lundy Bernard']
-license = 'MIT'
+name = "casablanca"
+version = "0.0.0+dev"
+description = "Record and replay tool for RabbitMQ "
+authors = ["Lundy Bernard <lundy.bernard@gmail.com>", "Lauren Moore"]
+license = "MIT"
+readme = "README.md"
+classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: MacOS',
+        'Operating System :: Microsoft :: Windows',
+]
 
-[tool.poetry.scripts]
-bat = 'bat.cli:BATCLI'
+[tool.poetry.urls]
+"Documentation" = "https://casablanca.readthedocs.io/en/latest/"
+"Source Code" = "https://github.com/lundybernard/casablanca/"
 
 [tool.poetry.dependencies]
-python = '^3.8'
-batconf = '*'
-flask = '*'
-connexion = '*'
-requests = '*'
-pyyaml = '*'
+python = "^3.8"
+batconf = "*"
 
-[tool.poetry.dev-dependencies]
-setuptools = '*'
-pytest = '*'
+# optional dev dependencies
+# ref: https://python-poetry.org/docs/pyproject/#extras
+coverage = { version='*', optional=true}
+flake8 = { version='*', optional=true}
+mypy = { version='*', optional=true}
+pytest = { version='*', optional=true }
+pytest-cov = { version='*', optional=true }
+types-PyYAML = { version='*', optional=true }
+# optional documentation dependencies
+myst_parser = {version='*', optional=true}
+sphinx = {version='*', optional=true}
+sphinx_autodoc_typehints = {version='*', optional=true}
+sphinxext-opengraph = {version='*', optional=true}
+sphinx_design = {version='*', optional=true}
+sphinx-rtd-theme = {version='*', optional=true}
+matplotlib = {version='*', optional=true}  # for social preview cards
 
 
-[tool.pytest.ini_options]
-addopts = "--cov=bat --cov-report html --cov-fail-under=100"
-
-[tool.coverage.run]
-omit = [
-    # ignore coverage for these files
-    "bat/_version.py",
-    "bat/server.py",
-    "bat/tests/common_api_tests.py",
+[tool.poetry.extras]
+dev = [
+    "coverage",
+    "flake8",
+    "mypy",
+    "pytest",
+    "pytest-cov",
+    "types-PyYAML",
 ]
+docs = [
+    "sphinx",
+    "sphinx_autodoc_typehints",
+    "sphinx_design",
+    "sphinxext-opengraph",
+    "sphinx-rtd-theme",
+    "matplotlib", # for social preview cards
+    "myst_parser",
+]
+
+
+# === Testing === #
+[tool.pytest.ini_options]
+log_level = "INFO"
+addopts = "--cov=casablanca --cov-report=term --cov-report=xml"
+python_classes = '*Tests'
+python_files = ["*_test.py", "*_pytest.py"]
+
+[tool.coverage.report]
+fail_under = 100
+skip_covered = true
+show_missing = true
+skip_empty = true
+
+
+# === Formatting === #
+[tool.flake8]
+max-line-length = "79"
+max-complexity = 10
