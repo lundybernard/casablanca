@@ -1,135 +1,213 @@
-# BAT Project Template
-example python microservice project
+# Casablanca
 
-[![Build Status](https://travis-ci.org/lundybernard/project_template.svg?branch=master)](https://travis-ci.org/lundybernard/project_template)
+**Casablanca** is a Python package designed to record and replay messages from/to RabbitMQ. Primarily intended as a developer tool for automated testing, Casablanca can also be used to populate RabbitMQ queues with data from static files for application or production use.
+
+---
+
+## Features
+
+Casablanca provides the following key features:
+
+- Record messages from one or more RabbitMQ queues.
+- Replay recorded messages to RabbitMQ queues.
+- Seamlessly integrate into automated testing workflows and CI/CD pipelines.
+- Populate RabbitMQ queues in production or application code from static files.
+- Command-line interface (CLI) for easy usage.
+- Python API for advanced integrations within custom workflows.
+- Flexible configuration options for RabbitMQ and file handling.
+
+---
+
+## Prerequisites
+
+You will need the following before using Casablanca:
+
+- Python 3.7 or higher
+- RabbitMQ installed and running
+- `pip` for Python package management
+
+---
 
 ## Installation
-install in developer mode from source
 
-```
-python setup.py develop
-```
+Casablanca uses `pyproject.toml` (PEP 517/518) for building and installing.
 
-### Install latest batconf from github branch
+### Installing Casablanca in Development Mode
 
-```
-pip install git+ssh://git@github.com/lundybernard/batconf.git@main
-```
+Clone the repository and install in editable mode:
 
-## Run Functional tests
-
-### Manually
-start the web server on local host
-
-```
-bat start
+```bash
+git clone https://github.com/your-repo/casablanca.git
+cd casablanca
+pip install -e .
 ```
 
-run tests against the web server
+### Installing Casablanca for Production
 
-```
-python -m unittest functional_tests/service_test.py
-pytest functional_tests/service_test.py
-```
+For a standard production installation:
 
-### Run the service and tests via CLI
-Install the package
-
-```
-python setup.py install
-python setup.py develop
+```bash
+pip install .
 ```
 
-start webserver with cli
+---
 
+## Usage
+
+Casablanca supports recording and replaying RabbitMQ messages either via its **Command-Line Interface (CLI)** or as a **Python API** for more advanced use-cases.
+
+### Recording Messages
+
+Use Casablanca to record messages from RabbitMQ queues. Messages can be stored in a variety of formats (e.g., log files, JSON).
+
+#### Example CLI Usage for Recording
+
+```bash
+casablanca record --queue my-queue --output messages.log --host localhost --port 5672
 ```
-bat start
+
+This command connects to RabbitMQ, listens to the `my-queue`, and records all messages into `messages.log`.
+
+### Replaying Messages
+
+Replay stored messages back into RabbitMQ queues. This is helpful for testing workflows or initializing queues from predefined data.
+
+#### Example CLI Usage for Replaying
+
+```bash
+casablanca replay --input messages.log --queue replay-queue --host localhost --port 5672
 ```
 
-Run functional tests
+This replays all the messages saved in `messages.log` into the specified RabbitMQ `replay-queue`.
 
+---
+
+## Configuration
+
+Casablanca allows configuration via:
+
+1. **Command-line arguments** (e.g., `--host`, `--queue`, `--output`)
+2. **Environment variables** (e.g., `RABBITMQ_HOST`, `RABBITMQ_PORT`)
+3. **Configuration files** (e.g., `config.yaml` or `config.json`).
+
+---
+
+## Testing
+
+Casablanca includes both **unit tests** and **functional tests** to ensure correctness and reliability. Testing is an integral part of the source code, with unit tests existing alongside the implementation they validate.
+
+### Running Unit Tests
+
+Unit tests exist side-by-side with the code they test. For example:
+/casablanca/ 
+    recorder.py  # Implementation Code
+    replayer.py  
+        tests/
+            recorder_test.py  # Unit Tests for recorder.py
+            replayer_test.py  # Unit Tests for replayer.py
+
+
+
+Run unit tests by simply running `pytest` over the source code directory:
+
+```bash
+pytest casablanca/
 ```
-bat test service
-pytest functional_tests/service_test.py
+
+Unit tests do not require a running RabbitMQ instance and are limited to verifying the internal logic and behavior of individual components.
+
+### Running Functional Tests
+
+Functional tests validate the interaction of Casablanca with an active RabbitMQ server. These tests ensure that messages can be correctly recorded and replayed.
+
+Run functional tests with:
+
+```bash
+pytest functional_tests/
 ```
 
-### Run Container tests
-to validate the docker container works properly, and docker-compose works
+Make sure RabbitMQ is running locally before executing functional tests.
 
-#### Manual Test
-Run the container with docker-compose and test it with functional_tests
+### Running All Tests
 
+To run both unit tests and functional tests together:
+
+```bash
+pytest
 ```
+
+### Containerized Tests (Optional)
+
+For testing Casablanca in containerized environments, you can use Docker:
+
+```bash
 docker-compose build
 docker-compose up
-pytest functional_tests/service_test.py
+pytest
 ```
 
-#### Automatic test
-container_test will run docker-compose before each test case,
-and execute the test against the running container
+#### CLI Shortcut for Container Tests
 
-```
-python -m unittest container_tests/container_test.py
-pytest container_tests/container_test.py
+You can also run containerized tests via a CLI command:
 
+```bash
+casablanca test
 ```
 
-CLI
+---
 
-```
-bat run_container_tests
-```
+## Examples
 
+Below are some practical examples of Casablanca usage:
 
-## rebuild local containers
-sometimes necessary if container tests are failing
-```
-docker-compose down --rmi local
-docker-compose build
-```
+### Record Messages from Multiple Queues
 
+Record messages from multiple queues in RabbitMQ and save them into separate files:
 
-### Kubernetes deployment example:
-1. install Microk8s
-```
-sudo snap install microk8s --classic
-microk8s.start
+```bash
+casablanca record --queue queue1 --output queue1.log
+casablanca record --queue queue2 --output queue2.log
 ```
 
-2. Start a local Docker Registry
-```
-docker run -p 5001:5001 registry
+### Replay Messages with Delays
+
+Replay recorded messages into RabbitMQ at a controlled pace by adding a delay between each message:
+
+```bash
+casablanca replay --input messages.log --queue test-queue --delay 1
 ```
 
-3. Tag and Push the image to your docker registry
-```
-docker build -t bat-app ./
-docker tag bat localhost:5001/bat-app
-docker push localhost:5001/bat-app
+This replays the messages in `messages.log` to `test-queue`, introducing a 1-second delay between each message.
+
+### Load Testing with Recorded Data
+
+Use recorded data to simulate load testing by replaying messages at high speeds:
+
+```bash
+casablanca replay --input large-dataset.log --queue stress-test-queue --parallel-workers 10
 ```
 
-4. Run the application and ingress
-```
-microk8s.kubectl apply -f k8/ingress.yml
-microk8s.kubectl apply -f k8/bat-app-deployment.yml
-```
+This replays large datasets using 10 workers to `stress-test-queue` for performance testing.
 
-5. enable ingress
-```
-microk8s.enable ingress
-```
-and verify
-```
-microk8s.kubectl get all -A
-```
+---
 
-6. expose the application
-```
-microk8s.kubectl expose deployment bat-app --type=LoadBalancer --port=8080
-```
+## Contribution
 
-7. test the endpoint
-```
-curl -kL https://127.0.0.1/bat-app
-```
+We welcome contributions to improve Casablanca! Here's how you can get involved:
+
+1. **Report Issues**: Found a bug? Have suggestions? Open an issue on GitHub.
+2. **Submit Pull Requests**: Fork the repository, make your changes, and submit a PR.
+3. **Improve Documentation**: Help expand or enhance the documentation.
+4. **Add Tests**: Write new tests (both unit and functional) to improve code coverage and reliability.
+
+---
+
+## License
+
+Casablanca is licensed under [Your Preferred Open Source License]. See the `LICENSE` file in the repository for further details.
+
+---
+
+## Feedback
+
+We’d love to hear your feedback! If you encounter any issues, have suggestions, or want to request a feature, feel free to open an issue or contact the maintainers. Happy coding with Casablanca! 🎉
