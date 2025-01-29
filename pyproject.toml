@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "casablanca"
-version = "0.0.0+dev"
+version = "0.0.0"
 description = "Record and replay tool for RabbitMQ "
 authors = ["Lundy Bernard <lundy.bernard@gmail.com>", "Lauren Moore"]
 license = "MIT"
