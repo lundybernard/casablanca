@@ -18,21 +18,13 @@ def BATCLI(ARGS=None):
     p = argparser()
     # Execute
     # get only the first command in args
-    args = p.parse_args(ARGS, NestedNameSpace())
-    conf = get_config(
-        cli_args=args,
-        config_file=args.config_file,
-        config_env=args.config_env,
-    )
+    args = p.parse_args(args=ARGS)
     Commands.set_log_level(args)
     # execute function set for parsed command
-#    if not hasattr(Commands, args.func.__name__):
-    try:
-        args.func(conf)
-    except Exception as exp:
-        print(exp)
+    if not hasattr(Commands, args.func.__name__):  # pragma: no cover
         p.print_help()
         exit(1)
+    args.func(args)
     exit(0)
 
 

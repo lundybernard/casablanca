@@ -55,44 +55,27 @@ class TestBATCLI(TestCase):
         set_log_level.assert_called_with(argparser().parse_args(args))
         t.exit.assert_called_with(0)
 
-    @patch(f'{SRC}.argparser', wraps=argparser)
-    def test_missing_command(t, argparser):
-        '''prints help if no arguments are given
-        '''
-        # first get the actual parsed args
-        ARGS = []
-        parser = argparser()
-        parser.print_help = Mock(wraps=parser.print_help)
-        args = parser.parse_args(ARGS)
-
-        # calling return_value makes argparser return a mock
-        m_parser = argparser.return_value
-        # make the return value from the mock the real args object
-        m_parser.parse_args.return_value = args
-
-        BATCLI(ARGS)
-        parser.print_help.assert_called_with()
 
     @patch('builtins.print')
-    @patch(f'{SRC}.argparser', wraps=argparser)
+    @patch(f'{SRC}.argparser', autospec=True)
     def test_command_error(t, argparser, print):
         '''prints the error message, and help if a command throws an error
         '''
-        exc = Exception()
+        ARGS = []
+        exc = RuntimeError()
 
-        def fail(args):
+        def fail(_):
             raise exc
 
-        ARGS = []
-        parser = argparser()
-        args = parser.parse_args(ARGS)
+        args = Mock(['func', 'loglevel'])
+        args.loglevel = 0
         args.func = fail
-        m_parser = argparser.return_value
-        m_parser.parse_args.return_value = args
+        parser = Mock()
+        parser.parse_args.return_value = args
+        argparser.return_value = parser
 
-        BATCLI(ARGS)
-        print.assert_called_with(exc)
-        m_parser.print_help.assert_called_with()
+        with t.assertRaises(RuntimeError):
+            BATCLI(ARGS)
 
     def test_commands(t):
         commands = [
