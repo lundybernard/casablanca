@@ -4,6 +4,12 @@
 
 ---
 
+## Development Status
+Pre-Alpha: the project is in active development, 
+and core features are still being added.
+we will release v0.0.1 when it is ready for alpha testing.
+
+
 ## Features
 
 Casablanca provides the following key features:
@@ -22,7 +28,7 @@ Casablanca provides the following key features:
 
 You will need the following before using Casablanca:
 
-- Python 3.7 or higher
+- Python 3.9 or higher
 - RabbitMQ installed and running
 - `pip` for Python package management
 
@@ -34,7 +40,7 @@ Casablanca uses `pyproject.toml` (PEP 517/518) for building and installing.
 
 ### Installing Casablanca in Development Mode
 
-Clone the repository and install in editable mode:
+Clone the repository and instal in editable mode:
 
 ```bash
 git clone https://github.com/your-repo/casablanca.git

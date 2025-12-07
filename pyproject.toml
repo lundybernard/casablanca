@@ -10,7 +10,7 @@ authors = ["Lundy Bernard <lundy.bernard@gmail.com>", "Lauren Moore"]
 license = "MIT"
 readme = "README.md"
 classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Operating System :: POSIX :: Linux',
@@ -23,7 +23,7 @@ classifiers=[
 "Source Code" = "https://github.com/lundybernard/casablanca/"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 batconf = "*"
 
 # optional dev dependencies
