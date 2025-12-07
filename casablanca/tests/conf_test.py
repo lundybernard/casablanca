@@ -10,7 +10,7 @@ from ..conf import (
 )
 
 
-SRC = 'bat.conf'
+SRC = 'casablanca.conf'
 
 EXAMPLE_CONFIG_INI = '''
 [batconf]

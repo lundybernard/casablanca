@@ -5,8 +5,8 @@ from .example import Config as ExampleConfig
 
 from batconf.manager import Configuration, ConfigProtocol
 
-from batconf.source import SourceList
-from batconf.sources.args import CliArgsConfig, Namespace
+from batconf.source import SourceList, SourceInterface
+from batconf.sources.argparse import Namespace, NamespaceConfig
 from batconf.sources.env import EnvConfig
 from batconf.sources.file import FileConfig
 from batconf.sources.dataclass import DataclassConfig
