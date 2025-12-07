@@ -1,5 +1,0 @@
-setuptools
-flask
-connexion
-requests
-pyyaml

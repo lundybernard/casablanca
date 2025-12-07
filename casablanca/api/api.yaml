@@ -15,7 +15,7 @@ paths:
     get:
         summary: returns "Hello world!"
         description: Example API endpoint
-        operationId: bat.lib.hello_world
+        operationId: casablanca.lib.hello_world
         responses:
             '200':
                 description: OK

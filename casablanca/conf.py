@@ -1,4 +1,6 @@
-from bat import GlobalConfig
+from dataclasses import dataclass
+
+from .example import Config
 
 from batconf.manager import Configuration, ConfigProtocol
 
@@ -31,3 +33,9 @@ def get_config(
     source_list = SourceList(config_sources)
 
     return Configuration(source_list, config_class)
+
+
+@dataclass
+class GlobalConfig:
+    # example module with configuration dataclass
+    example: Config
