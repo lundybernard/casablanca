@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from bat.lib import hello_world
+from casablanca.lib import hello_world
 
 
 class LibTests(TestCase):

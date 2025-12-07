@@ -11,7 +11,7 @@ from ..cli import (
 )
 
 
-SRC = 'bat.cli'
+SRC = 'casablanca.cli'
 
 
 class TestArgparser(TestCase):

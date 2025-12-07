@@ -2,8 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from dataclasses import dataclass
-
-import yaml
+from configparser import ConfigParser
 
 from ..conf import (
     get_config,
@@ -13,24 +12,25 @@ from ..conf import (
 
 SRC = 'bat.conf'
 
-EXAMPLE_CONFIG_YAML = '''
-default: example
+EXAMPLE_CONFIG_INI = '''
+[batconf]
+default_env = example
 
-example:
-    bat:
-        key: value
-        remote_host:
-            api_key: example_api_key
-            url: https://api-example.host.io/
+[example]
+[example.bat]
+key = value
+[example.bat.remote_host]
+api_key = example_api_key
+url = https://api-example.host.io/
 
-alt:
-    bat:
-        module:
-            key: alt_value
+[alt]
+[alt.bat]
+[alt.bat.module]
+key = alt_value
 '''
 
-EXAMPLE_CONFIG_DICT = yaml.load(EXAMPLE_CONFIG_YAML, Loader=yaml.BaseLoader)
-
+CONFIG_PARSER_ENVS = ConfigParser()
+CONFIG_PARSER_ENVS.read_string(EXAMPLE_CONFIG_INI)
 
 class Test_get_config(TestCase):
 

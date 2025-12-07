@@ -3,12 +3,11 @@ import logging
 from logging.config import dictConfig
 from sys import exit
 
-from bat.conf import get_config
+from casablanca.conf import get_config
 
-from bat.server import server_parser
-from bat.example.cli import example_cli
-from bat.logconf import logging_config
-from bat.lib import hello_world
+from casablanca.example.cli import example_cli
+from casablanca.logconf import logging_config
+from casablanca.lib import hello_world
 
 
 dictConfig(logging_config)
@@ -98,12 +97,6 @@ def argparser():
     )
     hello.set_defaults(func=Commands.hello)
 
-    commands.add_parser(
-        'server',
-        help='http server related commands',
-        add_help=False,
-        parents=[server_parser()],
-    )
     # Add a subparser from a module
     commands.add_parser(
         'example',
