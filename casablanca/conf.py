@@ -8,7 +8,7 @@ from batconf.manager import Configuration, ConfigProtocol
 from batconf.source import SourceList, SourceInterface
 from batconf.sources.argparse import Namespace, NamespaceConfig
 from batconf.sources.env import EnvConfig
-from batconf.sources.file import FileConfig
+from batconf.sources.ini import IniConfig
 from batconf.sources.dataclass import DataclassConfig
 
 
@@ -35,7 +35,7 @@ def get_config(
         EnvConfig(),
         (
             config_file if config_file
-            else FileConfig(config_file_name, config_env=config_env)
+            else IniConfig(config_file_name, config_env=config_env)
         ),
     ]
 
