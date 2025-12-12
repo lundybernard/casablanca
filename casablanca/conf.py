@@ -9,8 +9,6 @@ from batconf.source import SourceList, SourceInterface
 from batconf.sources.argparse import Namespace, NamespaceConfig
 from batconf.sources.env import EnvConfig
 from batconf.sources.ini import IniConfig
-from batconf.sources.dataclass import DataclassConfig
-
 
 
 @dataclass

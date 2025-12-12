@@ -50,6 +50,7 @@ dev = [
     'pytest',
     'pytest-cov',
     'types-PyYAML',
+    'testcontainers',
 ]
 docs = [
     'sphinx',
