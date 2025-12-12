@@ -2,7 +2,10 @@ from dataclasses import dataclass
 from base64 import b64encode
 from urllib.request import Request, urlopen
 
-import pytest
+from casablanca import RabbitmqClient
+from casablanca.conf import get_config
+
+from pytest import mark, fixture
 
 from testcontainers.rabbitmq import RabbitMqContainer
 from testcontainers.core.wait_strategies import HttpWaitStrategy
@@ -17,7 +20,7 @@ class RabbitMQInfo:
     mgmt_url: str
 
 
-@pytest.fixture(scope='session')
+@fixture(scope='session')
 def rabbitmq(request: pytest.FixtureRequest) -> RabbitmQInfo:
 
     with RabbitMqContainer(
@@ -58,7 +61,7 @@ def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
 @mark.usefixtures("rabbitmq")
 class FeatureTests:
 
-    def test_server_online_check(t, rmq_info: RabbitMQInfo):
+    def test_server_online_check(t):
         cfg = get_config().rabbitmq
         t.rc = RabbitmqClient.from_config(cfg)
 
