@@ -17,6 +17,7 @@ from batconf.sources.dataclass import DataclassConfig
 class ConfigSchema:
     # example module with configuration dataclass
     example: ExampleConfig
+    loglevel: str = 'ERROR'
 
 
 def get_config(

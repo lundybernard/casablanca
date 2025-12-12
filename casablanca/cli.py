@@ -55,20 +55,20 @@ def argparser():
         '-v', '--verbose',
         help='enable INFO output',
         action='store_const',
-        dest='loglevel',
+        dest='casablanca.loglevel',
         const=logging.INFO
     )
     p.add_argument(
         '--debug',
         help='enable DEBUG output',
         action='store_const',
-        dest='loglevel',
+        dest='casablanca.loglevel',
         const=logging.DEBUG,
     )
     p.add_argument(
         '-c', '--conf', '--config_file',
         dest='config_file',
-        default=None,
+        default='config.ini',
         help='specify a config file to get environment details from.'
              ' default=./config.yaml',
     )
@@ -118,7 +118,11 @@ class Commands:
 
     @staticmethod
     def set_log_level(conf):
+        print(conf)
+
         if conf.loglevel:
             log.setLevel(conf.loglevel)
         else:
             log.setLevel(logging.ERROR)
+
+        print(log.level)
