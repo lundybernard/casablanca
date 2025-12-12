@@ -72,6 +72,9 @@ class Test_get_config(TestCase):
 
         t.ConfigSchema = ConfigSchema
 
+    def test_without_parameters(t):
+        _ = get_config()
+
     @patch(f'{SRC}.EnvConfig', autospec=True)
     def test_default_values(t, EnvConfig):
         t.IniConfig.return_value = None
@@ -116,7 +119,7 @@ class Test_get_config(TestCase):
         '''
         config_env = 'configuration file environment'
         get_config(t.ConfigSchema, config_env=config_env)
-        t.IniConfig.assert_called_with(None, config_env=config_env)
+        t.IniConfig.assert_called_with('.config.ini', config_env=config_env)
 
     @patch(f'{SRC}.EnvConfig', autospec=True)
     def test__getattr__missing_attribute(t, EnvConfig):

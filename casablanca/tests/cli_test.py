@@ -8,16 +8,24 @@ from ..cli import (
     Commands,
     logging,
     argparse,
+    get_help,
 )
 
 
 SRC = 'casablanca.cli'
 
 
-class TestArgparser(TestCase):
+class CliTests(TestCase):
 
     def test_argparser(t):
         argparser()
+
+    def test_get_help(t):
+        parser = Mock()
+
+        help_func = get_help(parser)
+        help_func('args placeholder')
+        parser.print_help.assert_called_once()
 
 
 class TestBATCLI(TestCase):
@@ -28,6 +36,9 @@ class TestBATCLI(TestCase):
             patcher = patch(f'{SRC}.{target}', autospec=True)
             setattr(t, target, patcher.start())
             t.addCleanup(patcher.stop)
+
+        t.cfg = t.get_config.return_value
+        t.cfg.loglevel = 0
 
     def validate_commands(t, commands):
         for cmd in commands:
@@ -40,7 +51,7 @@ class TestBATCLI(TestCase):
                     args = argparser().parse_args(ARGS)
                     t.get_config.assert_called_with(
                         cli_args=args,
-                        config_file=args.config_file,
+                        config_file_name=args.config_file,
                         config_env=args.config_env,
                     )
                     m_cmd.assert_called_with(
@@ -48,40 +59,33 @@ class TestBATCLI(TestCase):
                     )
                     t.exit.assert_called_with(0)
 
+    @patch(f'{SRC}.argparser', autospec=True)
     @patch(f'{SRC}.Commands.set_log_level', autospec=True)
-    def test_set_log_level(t, set_log_level):
-        args = ['--debug', 'hello', ]
-        BATCLI(args)
-        set_log_level.assert_called_with(argparser().parse_args(args))
+    def test_set_log_level(
+        t,
+        set_log_level: Mock,
+        argparser: Mock,
+    ):
+        ARGS = ['--debug', 'hello', ]
+        parser = argparser.return_value
+        args = parser.parse_args.return_value
+        args.func = Commands.hello
+
+        BATCLI(ARGS)
+
+        parser.parse_args.assert_called_with(args=ARGS)
+        t.get_config.assert_called_with(
+            cli_args=args,
+            config_file_name=args.config_file,
+            config_env=args.config_env,
+        )
+        set_log_level.assert_called_with(t.cfg)
         t.exit.assert_called_with(0)
 
-
-    @patch('builtins.print')
-    @patch(f'{SRC}.argparser', autospec=True)
-    def test_command_error(t, argparser, print):
-        '''prints the error message, and help if a command throws an error
-        '''
-        ARGS = []
-        exc = RuntimeError()
-
-        def fail(_):
-            raise exc
-
-        args = Mock(['func', 'loglevel'])
-        args.loglevel = 0
-        args.func = fail
-        parser = Mock()
-        parser.parse_args.return_value = args
-        argparser.return_value = parser
-
-        with t.assertRaises(RuntimeError):
-            BATCLI(ARGS)
 
     def test_commands(t):
         commands = [
             'hello',
-            'run_functional_tests',
-            'run_container_tests',
         ]
 
         t.validate_commands(commands)

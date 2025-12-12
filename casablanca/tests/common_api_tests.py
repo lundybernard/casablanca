@@ -1,4 +1,3 @@
-import requests
 
 PT_SVC_ADDR = 'http://0.0.0.0:5000/'
 
@@ -11,6 +10,8 @@ class CommonAPITest(object):
     '''
 
     def test_api_hello_world(self):
+        import requests
+
         print('test_api_hello_world')
         url = f'{self.service_address}hello_world'
         print(f'connect to service at {url}')
