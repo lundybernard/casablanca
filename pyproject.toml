@@ -37,27 +37,6 @@ classifiers=[
 'Documentation' = 'https://casablanca.readthedocs.io/en/latest/'
 'Source Code' = 'https://github.com/lundybernard/casablanca/'
 
-[tool.poetry.dependencies]
-python = '^3.10'
-batconf = '*'
-
-# optional dev dependencies
-# ref: https://python-poetry.org/docs/pyproject/#extras
-coverage = { version='*', optional=true}
-flake8 = { version='*', optional=true}
-mypy = { version='*', optional=true}
-pytest = { version='*', optional=true }
-pytest-cov = { version='*', optional=true }
-types-PyYAML = { version='*', optional=true }
-# optional documentation dependencies
-myst_parser = {version='*', optional=true}
-sphinx = {version='*', optional=true}
-sphinx_autodoc_typehints = {version='*', optional=true}
-sphinxext-opengraph = {version='*', optional=true}
-sphinx_design = {version='*', optional=true}
-sphinx-rtd-theme = {version='*', optional=true}
-matplotlib = {version='*', optional=true}  # for social preview cards
-
 
 [dependency-groups]
 build = [
@@ -81,6 +60,10 @@ docs = [
     'matplotlib', # for social preview cards
     'myst_parser',
 ]
+
+
+[project.scripts]
+casablanca = 'casablanca.cli:BATCLI'
 
 
 # === Testing === #
