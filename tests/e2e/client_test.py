@@ -55,5 +55,11 @@ def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
         return False
 
 
-def test_(rabbitmq):
-    assert _mgmt_overview_is_ready(rabbitmq.mgmt_url)
+@mark.usefixtures("rabbitmq")
+class FeatureTests:
+
+    def test_server_online_check(t, rmq_info: RabbitMQInfo):
+        cfg = get_config().rabbitmq
+        t.rc = RabbitmqClient.from_config(cfg)
+
+        assert t.rc.manager.online is True
