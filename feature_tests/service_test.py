@@ -6,7 +6,7 @@ PT_SVC_ADDR = 'http://0.0.0.0:5000/'
 from casablanca.tests.common_api_tests import CommonAPITest
 
 
-RMQ_HOST = 0.0.0.0
+RMQ_HOST = '0.0.0.0'
 RMQ_PORT = 5672
 
 
@@ -24,7 +24,7 @@ def test_rabbitmq_service_up(rabbitmq_host, rabbitmq_port):
     or a standalone service on the specified host and port.
     """
     # First, check if the port is open and service is listening
-    with ((socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock)):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.settimeout(5)  # Timeout after 5 seconds
         result = sock.connect_ex((rabbitmq_host, rabbitmq_port))
         # Assert that the port is open

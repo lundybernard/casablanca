@@ -3,7 +3,7 @@ import subprocess
 
 #from container_tests.docker_compose_fixture import DockerCompose
 
-from project.tests.common_api_tests import CommonAPITest
+from casablanca.tests.common_api_tests import CommonAPITest
 
 '''
 class DockerComposeFunctionalTests(TestCase, CommonAPITest):
