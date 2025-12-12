@@ -1,7 +1,7 @@
 from typing import Any
 from dataclasses import dataclass
 
-from .example import Config as ExampleConfig
+from .client import RabbitmqClient
 
 from batconf.manager import Configuration, ConfigProtocol
 
@@ -14,7 +14,7 @@ from batconf.sources.ini import IniConfig
 @dataclass
 class ConfigSchema:
     # example module with configuration dataclass
-    example: ExampleConfig
+    rabbitmq: RabbitmqClient.Config
     loglevel: str = 'ERROR'
 
 
