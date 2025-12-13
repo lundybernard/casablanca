@@ -1,3 +1,5 @@
+from unittest import TestCase
+
 from dataclasses import dataclass
 from base64 import b64encode
 from urllib.request import Request, urlopen
@@ -38,7 +40,7 @@ def rabbitmq(request: pytest.FixtureRequest) -> RabbitmQInfo:
             host=host,
             amqp_port=amqp_port,
             mgmt_port=mgmt_port,
-            amqp_url=f"amqp://guest:guest@{host}:{amqp_port}/",
+            amqp_url=f"amqp://guest:guest@{host}:{amqp_port}",
             mgmt_url=f"http://{host}:{mgmt_port}",
         )
 
@@ -46,10 +48,10 @@ def rabbitmq(request: pytest.FixtureRequest) -> RabbitmQInfo:
 
 
 def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
-    auth = b64encode(b"guest:guest").decode("ascii")
+    auth = b64encode(b"guest:guest").decode('ascii')
     req = Request(
-        mgmt_url.rstrip("/") + "/api/overview",
-        headers={"Authorization": f"Basic {auth}"},
+        f'{mgmt_url}/api/overview',
+        headers={'Authorization': f'Basic {auth}'},
     )
     try:
         with urlopen(req, timeout=2) as resp:
@@ -59,10 +61,29 @@ def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
 
 
 @mark.usefixtures("rabbitmq")
-class FeatureTests:
-
-    def test_server_online_check(t):
+class FeatureTests(TestCase):
+    def setUp(t):
+        t.test_queue = "tests.e2e.FeatureTests"
         cfg = get_config().rabbitmq
         t.rc = RabbitmqClient.from_config(cfg)
 
+    def test_server_online_check(t):
         assert t.rc.manager.online is True
+
+    def test_sending_message(t):
+        msg = "Hello World!"
+
+        t.rc.publish(msg, t.test_queue)
+        ret = t.rc.read_one(queue=t.test_queue)
+
+        t.assertEqual(ret, msg)
+
+
+class ConfigTests(TestCase):
+
+    def test_config_values(t):
+        cfg = get_config()
+        print(cfg)
+        print(cfg._config_sources._sources[1]._config_file_path)
+
+        assert cfg.rabbitmq.hostname == 'localhost'

@@ -24,7 +24,7 @@ def get_config(
     cfg_path: str = 'casablanca',
     cli_args: Namespace | None = None,
     config_file: SourceInterface | None = None,
-    config_file_name: str = '.config.ini',
+    config_file_name: str = 'config.ini',
     config_env: str | None = None,
 ) -> Configuration:
 
