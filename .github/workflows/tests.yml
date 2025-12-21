@@ -48,13 +48,13 @@ jobs:
           # exit-zero treats all errors as warnings. 
           flake8 . --count --exit-zero --statistics
 
-      - name: Unit Tests
-        run: |
-          pytest casablanca
-
       - name: Install the module
         run: |
           pip install .${{ matrix.install-opts }}
+
+      - name: Unit Tests
+        run: |
+          pytest casablanca
 
       - name: Integration Tests
         run: |
