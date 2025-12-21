@@ -113,7 +113,7 @@ def get_help(parser):
 
 class Commands:
     @staticmethod
-    def hello(conf):
+    def hello(_):
         print(hello_world())
 
     @staticmethod
