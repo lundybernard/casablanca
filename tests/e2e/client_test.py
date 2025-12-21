@@ -70,20 +70,24 @@ class FeatureTests(TestCase):
     def test_server_online_check(t):
         assert t.rc.manager.online is True
 
-    def test_sending_message(t):
+    def test_publish_message(t):
         msg = "Hello World!"
 
         t.rc.publish(msg, t.test_queue)
-        ret = t.rc.read_one(queue=t.test_queue)
 
+        ret = t.rc.read_one(queue=t.test_queue)
         t.assertEqual(ret, msg)
+
+    def test_read_message(t):
+        message = 'why hello there'
+        r.rc.publish(message, queue=t.test_queue)
+        ret = t.rc.read_one(queue=t.test_queue)
+        t.assertEqual(ret, bytes(message, "utf-8"))
 
 
 class ConfigTests(TestCase):
-
+    '''Test configuration values used for e2e and other source-code tests
+    '''
     def test_config_values(t):
         cfg = get_config()
-        print(cfg)
-        print(cfg._config_sources._sources[1]._config_file_path)
-
-        assert cfg.rabbitmq.hostname == 'localhost'
+        t.assertEqual(cfg.rabbitmq.hostname,'localhost')
