@@ -27,19 +27,6 @@ jobs:
         ]
         install-opts: [ '', '[yaml]' ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        # Include extra tests for legacy toml package
-        include:
-          - python-version: '3.10'
-            install-opts: '[toml]'
-            os: 'ubuntu-latest'
-
-          - python-version: '3.10'
-            install-opts: '[toml]'
-            os: 'macos-latest'
-
-          - python-version: '3.10'
-            install-opts: '[toml]'
-            os: 'windows-latest'
 
     steps:
       - uses: actions/checkout@v4
