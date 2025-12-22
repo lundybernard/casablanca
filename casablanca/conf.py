@@ -27,13 +27,13 @@ def get_config(
     config_file_name: str = 'config.ini',
     config_env: str | None = None,
 ) -> Configuration:
-
     # Build a prioritized config source list
     config_sources = [
         NamespaceConfig(cli_args) if cli_args else None,
         EnvConfig(),
         (
-            config_file if config_file
+            config_file
+            if config_file
             else IniConfig(config_file_name, config_env=config_env)
         ),
     ]

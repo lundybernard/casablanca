@@ -1,5 +1,4 @@
-'''Example Module
-'''
+"""Example Module"""
 
 from dataclasses import dataclass
 

@@ -10,7 +10,6 @@ from casablanca.example.cli import (
 
 
 class ExampleTests(TestCase):
-
     @patch('builtins.print')
     def test_hello_world(t: TestCase, print: Mock):
         conf = Mock(Configuration)
@@ -30,7 +29,9 @@ class ExampleTests(TestCase):
     def test_default(t: TestCase, print: Mock):
         conf = Mock(Configuration)
         default(conf)
-        print.assert_has_calls([
-            call('default response from example module CLI'),
-            call(f'{conf=}'),
-        ])
+        print.assert_has_calls(
+            [
+                call('default response from example module CLI'),
+                call(f'{conf=}'),
+            ]
+        )

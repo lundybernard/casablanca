@@ -12,7 +12,7 @@ from ..conf import (
 
 SRC = 'casablanca.conf'
 
-EXAMPLE_CONFIG_INI = '''
+EXAMPLE_CONFIG_INI = """
 [batconf]
 default_env = example
 
@@ -27,15 +27,17 @@ url = https://api-example.host.io/
 [alt.casablanca]
 [alt.casablanca.module]
 key = alt_value
-'''
+"""
 
 CONFIG_PARSER_ENVS = ConfigParser()
 CONFIG_PARSER_ENVS.read_string(EXAMPLE_CONFIG_INI)
 
-class Test_get_config(TestCase):
 
+class Test_get_config(TestCase):
     def setUp(t):
-        patches = ['IniConfig', ]
+        patches = [
+            'IniConfig',
+        ]
         for target in patches:
             patcher = patch(f'{SRC}.{target}', autospec=True)
             setattr(t, target, patcher.start())
@@ -49,9 +51,11 @@ class Test_get_config(TestCase):
                         'arg_1': 'conf_file_arg_1',
                         'arg_2': 'conf_file_arg_2',
                     },
-                    'BModule': {'arg_1': '2020-20-21', },
+                    'BModule': {
+                        'arg_1': '2020-20-21',
+                    },
                 }
-            }
+            },
         }
 
         @dataclass
@@ -94,8 +98,7 @@ class Test_get_config(TestCase):
         t.assertEqual(conf.AModule.arg_1, 'cli_arg_1')
 
     def test_arg_config_file(t):
-        '''The given config_file parameter is used for attribute lookups
-        '''
+        """The given config_file parameter is used for attribute lookups"""
         config_file = t.IniConfig.return_value
         conf = get_config(t.ConfigSchema, config_file=config_file)
 
@@ -106,17 +109,13 @@ class Test_get_config(TestCase):
         )
 
     def test_arg_config_file_name(t):
-        '''The given config_file_name is passed to the IniConfig constructor
-        '''
+        """The given config_file_name is passed to the IniConfig constructor"""
         config_file_name = './test.config.yaml'
-        get_config(
-            t.ConfigSchema, config_file_name=config_file_name
-        )
+        get_config(t.ConfigSchema, config_file_name=config_file_name)
         t.IniConfig.assert_called_with(config_file_name, config_env=None)
 
     def test_arg_config_env(t):
-        '''The given config_env name is passed to the IniConfig constructor
-        '''
+        """The given config_env name is passed to the IniConfig constructor"""
         config_env = 'configuration file environment'
         get_config(t.ConfigSchema, config_env=config_env)
         t.IniConfig.assert_called_with('.config.ini', config_env=config_env)

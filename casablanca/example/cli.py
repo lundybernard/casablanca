@@ -5,9 +5,12 @@ from typing import Callable
 from batconf.manager import Configuration
 
 
-def get_help(parser: argparse.ArgumentParser) -> Callable[[Configuration], None]:
-    def help(conf: Configuration) -> None:
+def get_help(
+    parser: argparse.ArgumentParser,
+) -> Callable[[Configuration], None]:
+    def help(_: Configuration) -> None:
         parser.print_help()
+
     return help
 
 
@@ -15,11 +18,11 @@ def example_cli():
     example = argparse.ArgumentParser(
         prog='example',
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=textwrap.dedent('''\
+        description=textwrap.dedent("""\
             print the state of the deployment,
             or execute sub commands to manage the deployment:
                 bat deployment YYYY-MM-DD {sub command}
-        '''),
+        """),
     )
     # Default behavior if no sub-command is given
     # example.set_defaults(func=get_help(example))
@@ -28,7 +31,7 @@ def example_cli():
     # A required argument
     example.add_argument(
         dest='date',
-        default="(YYYY-MM-DD)",
+        default='(YYYY-MM-DD)',
         help='Date of deployment (YYYY-MM-DD)',
     )
 

@@ -16,7 +16,6 @@ SRC = 'casablanca.cli'
 
 
 class CliTests(TestCase):
-
     def test_argparser(t):
         argparser()
 
@@ -29,9 +28,11 @@ class CliTests(TestCase):
 
 
 class TestBATCLI(TestCase):
-
     def setUp(t):
-        patches = ['exit', 'get_config', ]
+        patches = [
+            'exit',
+            'get_config',
+        ]
         for target in patches:
             patcher = patch(f'{SRC}.{target}', autospec=True)
             setattr(t, target, patcher.start())
@@ -54,9 +55,7 @@ class TestBATCLI(TestCase):
                         config_file_name=args.config_file,
                         config_env=args.config_env,
                     )
-                    m_cmd.assert_called_with(
-                        t.get_config.return_value
-                    )
+                    m_cmd.assert_called_with(t.get_config.return_value)
                     t.exit.assert_called_with(0)
 
     @patch(f'{SRC}.argparser', autospec=True)
@@ -66,7 +65,10 @@ class TestBATCLI(TestCase):
         set_log_level: Mock,
         argparser: Mock,
     ):
-        ARGS = ['--debug', 'hello', ]
+        ARGS = [
+            '--debug',
+            'hello',
+        ]
         parser = argparser.return_value
         args = parser.parse_args.return_value
         args.func = Commands.hello
@@ -82,7 +84,6 @@ class TestBATCLI(TestCase):
         set_log_level.assert_called_with(t.cfg)
         t.exit.assert_called_with(0)
 
-
     def test_commands(t):
         commands = [
             'hello',
@@ -94,7 +95,6 @@ class TestBATCLI(TestCase):
 
 
 class TestNestedNameSpace(TestCase):
-
     def test_nesting(t):
         nns = NestedNameSpace()
         setattr(nns, 'top', 'level')
@@ -107,7 +107,6 @@ class TestNestedNameSpace(TestCase):
 
 
 class TestCommands(TestCase):
-
     @patch(f'{SRC}.log', autospec=True)
     def test_set_log_level(t, log):
         with t.subTest('default to ERROR'):
