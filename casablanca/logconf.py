@@ -6,7 +6,9 @@ logging_config = dict(
     formatters={
         'f': {'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'},
         'thread_formatter': {
-            'format': '%(asctime)s %(threadName)-12s %(levelname)-8s %(message)s'
+            'format': (
+                '%(asctime)s %(threadName)-12s %(levelname)-8s %(message)s'
+            )
         },
     },
     handlers={

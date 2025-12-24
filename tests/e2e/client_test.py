@@ -7,7 +7,7 @@ from urllib.request import Request, urlopen
 from casablanca import RabbitmqClient
 from casablanca.conf import get_config
 
-from pytest import mark, fixture
+from pytest import mark, fixture, FixtureRequest
 
 from testcontainers.rabbitmq import RabbitMqContainer
 from testcontainers.core.wait_strategies import HttpWaitStrategy
@@ -23,13 +23,12 @@ class RabbitMQInfo:
 
 
 @fixture(scope='session')
-def rabbitmq(request: pytest.FixtureRequest) -> RabbitmQInfo:
-
-    with RabbitMqContainer(
-        "rabbitmq:3-management"
-    ).with_exposed_ports(5672, 15672) as rmq:
+def rabbitmq(request: FixtureRequest) -> RabbitMQInfo:
+    with RabbitMqContainer('rabbitmq:3-management').with_exposed_ports(
+        5672, 15672
+    ) as rmq:
         rmq.waiting_for(
-            HttpWaitStrategy(15672, path="/api/overview").for_status_code(401)
+            HttpWaitStrategy(15672, path='/api/overview').for_status_code(401)
         )
 
         host = rmq.get_container_host_ip()
@@ -40,15 +39,15 @@ def rabbitmq(request: pytest.FixtureRequest) -> RabbitmQInfo:
             host=host,
             amqp_port=amqp_port,
             mgmt_port=mgmt_port,
-            amqp_url=f"amqp://guest:guest@{host}:{amqp_port}",
-            mgmt_url=f"http://{host}:{mgmt_port}",
+            amqp_url=f'amqp://guest:guest@{host}:{amqp_port}',
+            mgmt_url=f'http://{host}:{mgmt_port}',
         )
 
         yield info
 
 
 def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
-    auth = b64encode(b"guest:guest").decode('ascii')
+    auth = b64encode(b'guest:guest').decode('ascii')
     req = Request(
         f'{mgmt_url}/api/overview',
         headers={'Authorization': f'Basic {auth}'},
@@ -60,10 +59,10 @@ def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
         return False
 
 
-@mark.usefixtures("rabbitmq")
+@mark.usefixtures('rabbitmq')
 class FeatureTests(TestCase):
     def setUp(t):
-        t.test_queue = "tests.e2e.FeatureTests"
+        t.test_queue = 'tests.e2e.FeatureTests'
         cfg = get_config().rabbitmq
         t.rc = RabbitmqClient.from_config(cfg)
 
@@ -71,7 +70,7 @@ class FeatureTests(TestCase):
         assert t.rc.manager.online is True
 
     def test_publish_message(t):
-        msg = "Hello World!"
+        msg = 'Hello World!'
 
         t.rc.publish(msg, t.test_queue)
 
@@ -82,12 +81,12 @@ class FeatureTests(TestCase):
         message = 'why hello there'
         r.rc.publish(message, queue=t.test_queue)
         ret = t.rc.read_one(queue=t.test_queue)
-        t.assertEqual(ret, bytes(message, "utf-8"))
+        t.assertEqual(ret, bytes(message, 'utf-8'))
 
 
 class ConfigTests(TestCase):
-    '''Test configuration values used for e2e and other source-code tests
-    '''
+    """Test configuration values used for e2e and other source-code tests"""
+
     def test_config_values(t):
         cfg = get_config()
-        t.assertEqual(cfg.rabbitmq.hostname,'localhost')
+        t.assertEqual(cfg.rabbitmq.hostname, 'localhost')
