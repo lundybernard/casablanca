@@ -1,10 +1,15 @@
 from unittest import TestCase
 
-PT_SVC_ADDR = 'http://0.0.0.0:5000/'
-# PT_SVC_ADDR = 'http://127.0.0.1/project'
+import socket
+
+from pytest import fail
+import pika
 
 from casablanca.tests.common_api_tests import CommonAPITest
 
+
+PT_SVC_ADDR = 'http://0.0.0.0:5000/'
+# PT_SVC_ADDR = 'http://127.0.0.1/project'
 
 RMQ_HOST = '0.0.0.0'
 RMQ_PORT = 5672
@@ -28,10 +33,10 @@ def test_rabbitmq_service_up(rabbitmq_host, rabbitmq_port):
         result = sock.connect_ex((rabbitmq_host, rabbitmq_port))
         # Assert that the port is open
         # result == 0 indicates successful connection
-        assert (
-            result == 0,
-            f'RabbitMQ is not accessible at {RMQ_HOST}:{RMQ_PORT}',
-        )
+        if result != 0:
+            raise RuntimeError(
+                f'RabbitMQ is not accessible at {RMQ_HOST}:{RMQ_PORT}'
+            )
 
     # Next, attempt to connect using pika to verify RabbitMQ is operational
     try:
@@ -40,4 +45,4 @@ def test_rabbitmq_service_up(rabbitmq_host, rabbitmq_port):
         )
         connection.close()  # If connected successfully, close it
     except Exception as e:
-        pytest.fail(f'RabbitMQ service is not operational: {e}')
+        fail(f'RabbitMQ service is not operational: {e}')
