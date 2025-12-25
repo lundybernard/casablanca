@@ -79,7 +79,9 @@ fail_under = 100
 skip_covered = true
 show_missing = true
 skip_empty = true
-
+omit = [
+    "casablanca/tests/common_api_tests.py",
+]
 
 # === Formatting === #
 [tool.flake8]
