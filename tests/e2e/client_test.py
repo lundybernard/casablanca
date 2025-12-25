@@ -79,7 +79,7 @@ class FeatureTests(TestCase):
 
     def test_read_message(t):
         message = 'why hello there'
-        r.rc.publish(message, queue=t.test_queue)
+        t.rc.publish(message, queue=t.test_queue)
         ret = t.rc.read_one(queue=t.test_queue)
         t.assertEqual(ret, bytes(message, 'utf-8'))
 
