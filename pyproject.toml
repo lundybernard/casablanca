@@ -85,3 +85,10 @@ skip_empty = true
 [tool.flake8]
 max-line-length = '79'
 max-complexity = 10
+
+[tool.ruff]
+line-length = 79
+[tool.ruff.format]
+quote-style = 'single'
+[tool.ruff.lint]
+ignore = ['F401']
