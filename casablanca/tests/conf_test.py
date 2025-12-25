@@ -118,7 +118,7 @@ class Test_get_config(TestCase):
         """The given config_env name is passed to the IniConfig constructor"""
         config_env = 'configuration file environment'
         get_config(t.ConfigSchema, config_env=config_env)
-        t.IniConfig.assert_called_with('.config.ini', config_env=config_env)
+        t.IniConfig.assert_called_with('config.ini', config_env=config_env)
 
     @patch(f'{SRC}.EnvConfig', autospec=True)
     def test__getattr__missing_attribute(t, EnvConfig):
@@ -127,4 +127,4 @@ class Test_get_config(TestCase):
 
         conf = get_config(t.ConfigSchema)
         with t.assertRaises(AttributeError):
-            conf._sir_not_appearing_in_this_film
+            _ = conf._sir_not_appearing_in_this_film
