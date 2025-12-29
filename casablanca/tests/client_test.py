@@ -29,7 +29,7 @@ class RabbitmqClientTests(TestCase):
             # TODO: implement publish method
             t.rc.publish('message', 'queue')
 
-    def test_read_one(t) -> str:
+    def test_read_one(t) -> None:
         with t.assertRaises(NotImplementedError):
             # TODO: implement read_one method
             t.rc.read_one('queue')

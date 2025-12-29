@@ -28,6 +28,10 @@ class CliTests(TestCase):
 
 
 class TestBATCLI(TestCase):
+    get_config: Mock
+    exit: Mock
+
+
     def setUp(t):
         patches = [
             'exit',

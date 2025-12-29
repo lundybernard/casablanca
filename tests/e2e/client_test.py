@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from unittest import TestCase
 
 from dataclasses import dataclass
@@ -23,7 +25,7 @@ class RabbitMQInfo:
 
 
 @fixture(scope='session')
-def rabbitmq(request: FixtureRequest) -> RabbitMQInfo:
+def rabbitmq(request: FixtureRequest) -> Iterator[RabbitMQInfo]:
     with RabbitMqContainer('rabbitmq:3-management').with_exposed_ports(
         5672, 15672
     ) as rmq:

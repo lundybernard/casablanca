@@ -50,6 +50,7 @@ dev = [
     'mypy',
     'pytest',
     'pytest-cov',
+    'types-requests',
     'types-PyYAML',
     'testcontainers',
 ]
