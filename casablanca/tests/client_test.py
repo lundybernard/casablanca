@@ -4,14 +4,32 @@ from ..client import RabbitmqClient
 
 
 class RabbitmqClientTests(TestCase):
-    def test___init__(t):
-        rmq = RabbitmqClient(hostname='xxx')
+    def setUp(t):
+        t.rc = RabbitmqClient(hostname='unit.test.rmq')
 
-        t.assertEqual(rmq._hostname, 'xxx')
+    def test___init__(t):
+        rc = RabbitmqClient(hostname='xxx')
+
+        t.assertEqual(rc._hostname, 'xxx')
 
     def test_from_config(t):
         hostname = 'some.host.name'
         cfg = RabbitmqClient.Config(hostname=hostname)
-        rmq = RabbitmqClient.from_config(cfg)
+        rc = RabbitmqClient.from_config(cfg)
 
-        t.assertEqual(rmq._hostname, hostname)
+        t.assertEqual(rc._hostname, hostname)
+
+    def test_manager(t):
+        with t.assertRaises(NotImplementedError):
+            # TODO: implement manager property
+            t.assertIs(t.rc.manager, None)
+
+    def test_publish(t) -> None:
+        with t.assertRaises(NotImplementedError):
+            # TODO: implement publish method
+            t.rc.publish('message', 'queue')
+
+    def test_read_one(t) -> str:
+        with t.assertRaises(NotImplementedError):
+            # TODO: implement read_one method
+            t.rc.read_one('queue')
