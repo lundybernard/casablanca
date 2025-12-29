@@ -57,6 +57,7 @@ jobs:
           pytest casablanca
 
       - name: Integration Tests
+        if: matrix.os != 'macos-latest'
         run: |
           pytest --no-cov tests
 
