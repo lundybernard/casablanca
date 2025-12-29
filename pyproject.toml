@@ -85,6 +85,11 @@ omit = [
     "casablanca/tests/common_api_tests.py",
 ]
 
+# === Type Checking === #
+[[tool.mypy.overrides]]
+module = "testcontainers.*"
+ignore_missing_imports = true
+
 # === Formatting === #
 [tool.flake8]
 max-line-length = '79'
