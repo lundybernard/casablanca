@@ -3,15 +3,16 @@ name: 'CodeQL'
 
 on:
   push:
-    branches: ['main']
+    branches: [ 'main' ]
   pull_request:
-    branches: ['main']
+    branches: [ 'main' ]
   schedule:
     - cron: '30 18 * * *'
 
 
 # Default all permissions to read-only
-permissions: read-all
+permissions:
+  contents: read
 
 
 jobs:
@@ -23,20 +24,16 @@ jobs:
       security-events: write
 
 
-
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-      with:
-        persist-credentials: false # Disables the token's ability to push code
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false # Disables the token's ability to push code
 
-    - name: Initialize CodeQL
-      # v4.31.9
-      uses: github/codeql-action/init@5d4e8d1aca955e8d8589aabd499c5cae939e33c7
-      with:
-        languages: python
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
+        with:
+          languages: python
 
-    - name: Perform Analysis
-      # v4.31.9
-      uses: github/codeql-action/analyze@5d4e8d1aca955e8d8589aabd499c5cae939e33c7
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9

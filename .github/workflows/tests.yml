@@ -15,6 +15,10 @@ on:
     # Run nightly at 12am UTC
     - cron: '0 0 * * *'
 
+# Declare default permissions as read only.
+permissions:
+  contents: read
+
 jobs:
   build:
 
