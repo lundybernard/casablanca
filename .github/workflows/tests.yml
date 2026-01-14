@@ -69,3 +69,12 @@ jobs:
         run: |
           mypy casablanca
           mypy tests
+
+  # Aggregator job, passes only when all tests pass
+  tests-passed:
+    name: "All Tests Passed"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 0
+
