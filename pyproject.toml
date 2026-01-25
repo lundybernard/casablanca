@@ -7,16 +7,17 @@ name = 'casablanca'
 version = '0.0.0'
 description = 'Record and replay tool for RabbitMQ '
 authors = [
-    {name='Lundy Bernard', email='lundy.bernard@gmail.com'},
+    { name = 'Lundy Bernard', email = 'lundy.bernard@gmail.com' },
 ]
-license = {file = 'LICENSE'}
+license = { file = 'LICENSE' }
 readme = 'README.md'
 requires-python = '>=3.10'
 dependencies = [
     'batconf',
     'pika',
+    'amqpstorm',
 ]
-classifiers=[
+classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
     'Programming Language :: Python :: 3',
@@ -89,6 +90,12 @@ omit = [
 [[tool.mypy.overrides]]
 module = "testcontainers.*"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "amqpstorm.*"
+ignore_missing_imports = true
+disable_error_code = ["import-untyped"]
+
 
 # === Formatting === #
 [tool.flake8]

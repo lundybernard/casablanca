@@ -34,7 +34,7 @@ CONFIG_PARSER_ENVS.read_string(EXAMPLE_CONFIG_INI)
 
 
 class Test_get_config(TestCase):
-    def setUp(t):
+    def setUp(t) -> None:
         patches = [
             'IniConfig',
         ]

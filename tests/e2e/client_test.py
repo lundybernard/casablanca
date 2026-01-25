@@ -63,15 +63,18 @@ def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
 
 @mark.usefixtures('rabbitmq')
 class FeatureTests(TestCase):
-    def setUp(t):
+    @fixture(autouse=True)
+    def _wire_client_from_container_info(t, rabbitmq: RabbitMQInfo):
         t.test_queue = 'tests.e2e.FeatureTests'
         cfg = get_config().rabbitmq
+
+        cfg.hostname = rabbitmq.host
+        cfg.adminport = rabbitmq.mgmt_port
+
         t.rc = RabbitmqClient.from_config(cfg)
 
     def test_server_online_check(t):
-        with t.assertRaises(NotImplementedError):
-            # TODO: Implement manager property
-            assert t.rc.manager.online is True
+        assert t.rc.manager.online is True
 
     def test_publish_message(t):
         msg = 'Hello World!'
