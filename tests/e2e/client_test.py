@@ -69,6 +69,7 @@ class FeatureTests(TestCase):
         cfg = get_config().rabbitmq
 
         cfg.hostname = rabbitmq.host
+        cfg.port = rabbitmq.amqp_port
         cfg.adminport = rabbitmq.mgmt_port
 
         t.rc = RabbitmqClient.from_config(cfg)
@@ -78,10 +79,7 @@ class FeatureTests(TestCase):
 
     def test_publish_message(t):
         msg = 'Hello World!'
-
-        with t.assertRaises(NotImplementedError):
-            # TODO: Implement publish method
-            t.rc.publish(msg, t.test_queue)
+        t.rc.publish(msg, t.test_queue)
 
         with t.assertRaises(NotImplementedError):
             # TODO: Implement read_one method

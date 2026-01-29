@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from ..client import RabbitmqClient
 
@@ -8,9 +8,17 @@ SRC = 'casablanca.client'
 
 
 class RabbitmqClientTests(TestCase):
+    RabbitMQManager: Mock
+    _BlockingConnection: Mock
+    _PlainCredentials: Mock
+    _ConnectionParameters: Mock
+
     def setUp(t):
         patches = [
             'RabbitMQManager',
+            '_BlockingConnection',
+            '_PlainCredentials',
+            '_ConnectionParameters',
         ]
         for target in patches:
             patcher = patch(f'{SRC}.{target}', autospec=True)
@@ -40,11 +48,13 @@ class RabbitmqClientTests(TestCase):
 
     def test_from_config(t):
         hostname = 'some.host.name'
+        port = '555'
         adminport = '7777777'
         username = 'user.name'
         password = 'pass.word'
         cfg = RabbitmqClient.Config(
             hostname=hostname,
+            port=port,
             adminport=adminport,
             username=username,
             password=password,
@@ -52,6 +62,7 @@ class RabbitmqClientTests(TestCase):
         rc = RabbitmqClient.from_config(cfg)
 
         t.assertEqual(rc.host_name, hostname)
+        t.assertEqual(rc.port, int(port))
         t.assertEqual(rc.admin_port, int(adminport))
         t.assertEqual(rc.username, username)
         t.assertEqual(rc.password, password)
@@ -66,9 +77,42 @@ class RabbitmqClientTests(TestCase):
         )
 
     def test_publish(t) -> None:
-        with t.assertRaises(NotImplementedError):
-            # TODO: implement publish method
-            t.rc.publish('message', 'queue')
+        message = '+message+'
+        queue = '+queue+'
+        t.rc.publish(message, queue)
+        # declare the queue each time, to be sure it exists
+        t.rc._channel.queue_declare.assert_called_with(queue=queue)
+        t.rc._channel.basic_publish.assert_called_with(
+            exchange='',
+            routing_key=queue,
+            body=message,
+        )
+
+    def test__channel(t) -> None:
+        channel = t.rc._channel
+        t.assertIs(channel, t.rc._connection.channel.return_value)
+
+    def test__connection(t) -> None:
+        t.assertIs(t.rc._connection, t._BlockingConnection.return_value)
+        t._BlockingConnection.assert_called_with(t.rc._connection_parameters)
+
+    def test__connection_parameters(t) -> None:
+        t.assertIs(
+            t.rc._connection_parameters,
+            t._ConnectionParameters.return_value,
+        )
+        t._ConnectionParameters.assert_called_with(
+            host=t.rc.host_name,
+            port=t.rc.port,
+            credentials=t.rc._credentials,
+        )
+
+    def test__credentials(t) -> None:
+        t.assertIs(t.rc._credentials, t._PlainCredentials.return_value)
+        t._PlainCredentials.assert_called_with(
+            username=t.rc.username,
+            password=t.rc.password,
+        )
 
     def test_read_one(t) -> None:
         with t.assertRaises(NotImplementedError):

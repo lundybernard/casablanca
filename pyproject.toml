@@ -53,6 +53,7 @@ dev = [
     'pytest-cov',
     'types-requests',
     'types-PyYAML',
+    'types-pika-ts',
     'testcontainers',
 ]
 docs = [
