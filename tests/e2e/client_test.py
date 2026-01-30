@@ -78,21 +78,17 @@ class FeatureTests(TestCase):
         assert t.rc.manager.online is True
 
     def test_publish_message(t):
-        msg = 'Hello World!'
+        msg = b'Hello World!'
         t.rc.publish(msg, t.test_queue)
 
-        with t.assertRaises(NotImplementedError):
-            # TODO: Implement read_one method
-            ret = t.rc.read_one(queue=t.test_queue)
-
-            t.assertEqual(ret, msg)
+        ret = t.rc.read_one(queue=t.test_queue)
+        t.assertEqual(ret, msg)
 
     def test_read_message(t):
         message = 'why hello there'
-        with t.assertRaises(NotImplementedError):
-            t.rc.publish(message, queue=t.test_queue)
-            ret = t.rc.read_one(queue=t.test_queue)
-            t.assertEqual(ret, bytes(message, 'utf-8'))
+        t.rc.publish(message, queue=t.test_queue)
+        ret = t.rc.read_one(queue=t.test_queue)
+        t.assertEqual(ret, bytes(message, 'utf-8'))
 
 
 class ConfigTests(TestCase):
