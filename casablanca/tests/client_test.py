@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
-from ..client import RabbitmqClient
+from ..client import RabbitmqClient, ReadOneHandler
 
 
 SRC = 'casablanca.client'
@@ -114,7 +114,41 @@ class RabbitmqClientTests(TestCase):
             password=t.rc.password,
         )
 
-    def test_read_one(t) -> None:
-        with t.assertRaises(NotImplementedError):
-            # TODO: implement read_one method
-            t.rc.read_one('queue')
+    @patch(f'{SRC}.ReadOneHandler', autospe=True)
+    def test_read_one(t, ReadOneHandler: Mock) -> None:
+        queue = 'unittest_queue'
+        ret = t.rc.read_one(queue)
+
+        handler = ReadOneHandler.return_value
+        channel = t.rc._channel
+        channel.basic_consume.assert_called_with(
+            queue=queue,
+            auto_ack=True,
+            on_message_callback=handler,
+        )
+        channel.start_consuming.assert_called_once()
+        t.assertIs(ret, handler.message)
+
+
+class ReadOneHandlerTests(TestCase):
+    @patch(f'{SRC}._BlockingChannel', autospec=True)
+    def test___call__(t, _BlockingChannel: Mock):
+        channel = _BlockingChannel.return_value
+        message = b'+incomming-message+'
+        read_one_handler = ReadOneHandler()
+        read_one_handler(
+            channel=channel,
+            method=None,
+            properties=None,
+            body=message,
+        )
+        channel.stop_consuming.assert_called_once()
+        channel.close.assert_called_once()
+        t.assertIs(message, read_one_handler.message)
+
+    def test_message(t):
+        message = '+cached_message+'
+        read_one_handler = ReadOneHandler()
+        t.assertIsNone(read_one_handler.message)
+        read_one_handler.message = message
+        t.assertEqual(message, read_one_handler.message)

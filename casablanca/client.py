@@ -59,8 +59,6 @@ class RabbitmqClient:
             password=self.password,
         )
 
-        raise NotImplementedError('Manager property is not implemented')
-
     def publish(self, message: str, queue: str) -> None:
         # to publish anything we need a channel
         self._channel.queue_declare(queue=queue)
@@ -69,6 +67,22 @@ class RabbitmqClient:
             routing_key=queue,
             body=message,
         )
+
+    def read_one(self, queue: str) -> bytes | None:
+        """Read a single message from a queue
+        this blocks while awaiting a message,
+        and is useful for testing and debugging.
+        """
+        handler = ReadOneHandler()
+        # Listen for incoming messages on a specific queue
+        self._channel.basic_consume(
+            queue=queue,
+            auto_ack=True,
+            on_message_callback=handler,
+        )
+        # This is a blocking operation
+        self._channel.start_consuming()
+        return handler.message
 
     @cached_property
     def _channel(self) -> _BlockingChannel:
@@ -96,5 +110,26 @@ class RabbitmqClient:
             password=self.password,
         )
 
-    def read_one(self, queue: str) -> str:
-        raise NotImplementedError('Read one method is not implemented')
+
+class ReadOneHandler:
+    """on_message_callback handler
+    waits for a single message, records it, then stops and closes the channel
+    """
+
+    def __init__(self):
+        self._message = None
+
+    def __call__(
+        self,
+        channel: _BlockingChannel,
+        method,
+        properties,
+        body: bytes,
+    ) -> None:
+        self._message = body
+        channel.stop_consuming()
+        channel.close()
+
+    @cached_property
+    def message(self) -> bytes | None:
+        return self._message
