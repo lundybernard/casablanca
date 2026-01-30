@@ -48,19 +48,6 @@ def rabbitmq(request: FixtureRequest) -> Iterator[RabbitMQInfo]:
         yield info
 
 
-def _mgmt_overview_is_ready(mgmt_url: str) -> bool:
-    auth = b64encode(b'guest:guest').decode('ascii')
-    req = Request(
-        f'{mgmt_url}/api/overview',
-        headers={'Authorization': f'Basic {auth}'},
-    )
-    try:
-        with urlopen(req, timeout=2) as resp:
-            return 200 <= resp.status < 300
-    except Exception:
-        return False
-
-
 @mark.usefixtures('rabbitmq')
 class FeatureTests(TestCase):
     @fixture(autouse=True)
