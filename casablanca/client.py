@@ -57,7 +57,12 @@ class RabbitmqClient:
         """We need a factory method that encapsulates this instances
         exchange_manager, so that it can be passed to the new Exchange object
         when it is created"""
-        return _ExchangeCache(_ExchangeFactory(self.exchange_manager))
+        return _ExchangeCache(
+            _ExchangeFactory(
+                exchange_class=Exchange,
+                exchange_manager=self.exchange_manager,
+            )
+        )
 
     @property
     def exchange_manager(self) -> ExchangeManager:
@@ -151,21 +156,28 @@ class ReadOneHandler:
 class _ExchangeFactory:
     """Key-aware factory for Exchange objects."""
 
-    def __init__(self, exchange_manager: ExchangeManager) -> None:
+    def __init__(
+        self,
+        exchange_class: type[Exchange],
+        exchange_manager: ExchangeManager,
+    ) -> None:
+        self._exchange_class = exchange_class
         self._exchange_manager = exchange_manager
 
     def __call__(self, name: str) -> Exchange:
-        return Exchange(name=name, exchange_manager=self._exchange_manager)
+        return self._exchange_class(
+            name=name, exchange_manager=self._exchange_manager
+        )
 
 
 class _ExchangeCache(dict[str, Exchange]):
     """Dict-like cache that creates Exchange objects on demand."""
 
-    def __init__(self, factory: Callable[[str], Exchange]) -> None:
+    def __init__(self, factory: _ExchangeFactory) -> None:
         super().__init__()
         self._factory = factory
 
     def __missing__(self, key: str) -> Exchange:
-        ex = self._factory(key)
+        ex = self._factory(name=key)
         self[key] = ex
         return ex

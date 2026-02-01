@@ -1,7 +1,14 @@
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, create_autospec
 
-from ..client import RabbitmqClient, ReadOneHandler, Exchange
+from ..client import (
+    RabbitmqClient,
+    ReadOneHandler,
+    _ExchangeFactory,
+    Exchange,
+    ExchangeManager,
+    _ExchangeCache,
+)
 
 
 SRC = 'casablanca.client'
@@ -177,17 +184,41 @@ class ReadOneHandlerTests(TestCase):
         t.assertEqual(message, read_one_handler.message)
 
 
-class _ExchangeCache(dict[str, Exchange]):
-    """Dict-like cache that creates Exchange objects on demand via a factory."""
+class _ExchangeFactoryTests(TestCase):
+    @patch(f'{SRC}.Exchange', autospec=True)
+    def test_exchange_factory(t, Exchange: Mock):
+        """Note, not totally isolated,
+        due to the way Exchange is part of the factory, it cant be patched out,
+        but it only touches external dependencies through the exchange manger
+        api, so its good enough
+        """
+        exchange_manager = Mock(ExchangeManager, autospec=True)
+        ef = _ExchangeFactory(
+            exchange_class=Exchange, exchange_manager=exchange_manager
+        )
+        ret = ef(name='exchange-name')
 
-    def __init__(self, factory: Callable[[str], Exchange]) -> None:
-        super().__init__()
-        self._factory = factory
+        t.assertIs(ret, Exchange.return_value)
+        Exchange.assert_called_with(
+            name='exchange-name', exchange_manager=exchange_manager
+        )
 
-    def __getitem__(self, key: str) -> Exchange:
-        try:
-            return super().__getitem__(key)
-        except KeyError:
-            ex = self._factory(key)
-            self[key] = ex
-            return ex
+
+class _ExchangeCacheTests(TestCase):
+    def test_exchange_cache(t):
+        exchange_factory = Mock()
+
+        ec = _ExchangeCache(factory=exchange_factory)
+
+        exchange_1 = ec['e1']
+        t.assertIs(exchange_1, exchange_factory.return_value)
+        exchange_factory.assert_called_with(name='e1')
+
+        # check Idempotency
+        exchange_1_again = ec['e1']
+        exchange_factory.assert_called_once_with(name='e1')
+        t.assertIs(exchange_1, exchange_1_again)
+
+        exchange_2 = ec['e2']
+        t.assertIs(exchange_2, exchange_factory.return_value)
+        exchange_factory.assert_called_with(name='e2')
