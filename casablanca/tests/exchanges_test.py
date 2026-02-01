@@ -32,12 +32,12 @@ class ExchangesTests(TestCase):
 
         t.exchange = Exchange(
             name=t.name,
-            exchange_api=t.exchange_manager,
+            exchange_manager=t.exchange_manager,
         )
 
     def test___init__(t) -> None:
         with t.subTest('defaults'):
-            ret = Exchange(name=t.name, exchange_api=t.exchange_manager)
+            ret = Exchange(name=t.name, exchange_manager=t.exchange_manager)
             # required
             t.assertEqual(ret.name, t.name)
             t.assertEqual(ret._exchange_manager, t.exchange_manager)
@@ -51,7 +51,7 @@ class ExchangesTests(TestCase):
         with t.subTest('optional arguments'):
             ret = Exchange(
                 name=t.name,
-                exchange_api=t.exchange_manager,
+                exchange_manager=t.exchange_manager,
                 virtual_host=t.virtual_host,
                 exchange_type=t.exchange_type,
                 passive=t.passive,

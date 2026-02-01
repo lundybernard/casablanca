@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Generic, TypeVar, Callable
 
 from dataclasses import dataclass
 from functools import cached_property
@@ -14,7 +15,8 @@ from pika.adapters.blocking_connection import (
 )
 
 
-from .manager import RabbitMQManager
+from .manager import RabbitMQManager, ExchangeManager
+from .exchanges import Exchange
 
 
 class RabbitmqClient:
@@ -51,9 +53,11 @@ class RabbitmqClient:
         )
 
     @cached_property
-    def exchanges(self):
-        self._exchanges = {}
-        return self._exchanges
+    def exchanges(self) -> dict[str, Exchange]:
+        """We need a factory method that encapsulates this instances
+        exchange_manager, so that it can be passed to the new Exchange object
+        when it is created"""
+        return _ExchangeCache(_ExchangeFactory(self.exchange_manager))
 
     @property
     def exchange_manager(self) -> ExchangeManager:
@@ -142,3 +146,26 @@ class ReadOneHandler:
     @cached_property
     def message(self) -> bytes | None:
         return self._message
+
+
+class _ExchangeFactory:
+    """Key-aware factory for Exchange objects."""
+
+    def __init__(self, exchange_manager: ExchangeManager) -> None:
+        self._exchange_manager = exchange_manager
+
+    def __call__(self, name: str) -> Exchange:
+        return Exchange(name=name, exchange_manager=self._exchange_manager)
+
+
+class _ExchangeCache(dict[str, Exchange]):
+    """Dict-like cache that creates Exchange objects on demand."""
+
+    def __init__(self, factory: Callable[[str], Exchange]) -> None:
+        super().__init__()
+        self._factory = factory
+
+    def __missing__(self, key: str) -> Exchange:
+        ex = self._factory(key)
+        self[key] = ex
+        return ex

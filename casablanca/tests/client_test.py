@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
-from ..client import RabbitmqClient, ReadOneHandler
+from ..client import RabbitmqClient, ReadOneHandler, Exchange
 
 
 SRC = 'casablanca.client'
@@ -67,15 +67,25 @@ class RabbitmqClientTests(TestCase):
         t.assertEqual(rc.username, username)
         t.assertEqual(rc.password, password)
 
-    def test_exchanges(t):
+    @patch(f'{SRC}.Exchange', autospec=True)
+    def test_exchanges(t, Exchange: Mock):
         """referencing an exchange in the cache creates and returns a new
         instance
         """
         e1 = t.rc.exchanges['E1']
+        Exchange.assert_called_with(
+            name='E1',
+            exchange_manager=t.rc.exchange_manager,
+        )
+        t.assertIs(e1, Exchange.return_value)
         e2 = t.rc.exchanges['E2']
-        t.assertEqual(e1.name, 'E1')
-        t.assertEqual(e2.name, 'E2')
-        t.assertDictEqual(t.rabbit.exchanges, {'E1': e1, 'E2': e2})
+        Exchange.assert_called_with(
+            name='E2',
+            exchange_manager=t.rc.exchange_manager,
+        )
+        t.assertIs(e2, Exchange.return_value)
+
+        t.assertDictEqual(t.rc.exchanges, {'E1': e1, 'E2': e2})
 
     def test_exchange_manager(t):
         t.assertIs(t.rc.exchange_manager, t.rc.manager.exchange)
@@ -165,3 +175,19 @@ class ReadOneHandlerTests(TestCase):
         t.assertIsNone(read_one_handler.message)
         read_one_handler.message = message
         t.assertEqual(message, read_one_handler.message)
+
+
+class _ExchangeCache(dict[str, Exchange]):
+    """Dict-like cache that creates Exchange objects on demand via a factory."""
+
+    def __init__(self, factory: Callable[[str], Exchange]) -> None:
+        super().__init__()
+        self._factory = factory
+
+    def __getitem__(self, key: str) -> Exchange:
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            ex = self._factory(key)
+            self[key] = ex
+            return ex

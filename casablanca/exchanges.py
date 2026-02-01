@@ -12,7 +12,7 @@ class Exchange:
     def __init__(
         self,
         name: str,
-        exchange_api: ExchangeManagerProto,
+        exchange_manager: ExchangeManagerProto,
         virtual_host: str = '/',
         exchange_type: str = 'fanout',
         passive: bool = False,
@@ -21,7 +21,7 @@ class Exchange:
         arguments: dict | None = None,
     ) -> None:
         self.name = name
-        self._exchange_manager = exchange_api
+        self._exchange_manager = exchange_manager
         self.virtual_host = virtual_host
         self.exchange_type = exchange_type
         self.passive = passive
