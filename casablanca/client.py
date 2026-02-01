@@ -51,6 +51,15 @@ class RabbitmqClient:
         )
 
     @cached_property
+    def exchanges(self):
+        self._exchanges = {}
+        return self._exchanges
+
+    @property
+    def exchange_manager(self) -> ExchangeManager:
+        return self.manager.exchange
+
+    @cached_property
     def manager(self) -> RabbitMQManager:
         return RabbitMQManager(
             host_name=self.host_name,

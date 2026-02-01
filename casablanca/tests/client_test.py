@@ -67,6 +67,19 @@ class RabbitmqClientTests(TestCase):
         t.assertEqual(rc.username, username)
         t.assertEqual(rc.password, password)
 
+    def test_exchanges(t):
+        """referencing an exchange in the cache creates and returns a new
+        instance
+        """
+        e1 = t.rc.exchanges['E1']
+        e2 = t.rc.exchanges['E2']
+        t.assertEqual(e1.name, 'E1')
+        t.assertEqual(e2.name, 'E2')
+        t.assertDictEqual(t.rabbit.exchanges, {'E1': e1, 'E2': e2})
+
+    def test_exchange_manager(t):
+        t.assertIs(t.rc.exchange_manager, t.rc.manager.exchange)
+
     def test_manager(t):
         t.assertIs(t.rc.manager, t.RabbitMQManager.return_value)
         t.RabbitMQManager.assert_called_with(
