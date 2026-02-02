@@ -114,10 +114,10 @@ class ExchangeManagerTests(TestCase):
             with t.assertRaises(ApiError):
                 t.em.get(exchange_name=exchange_name, virtual_host=vhost)
 
-    def test_list(t) -> None:
+    def test_list_exchanges(t) -> None:
         """get a list of all exchanges from the rmq server"""
         with t.subTest('default parameters'):
-            ret = t.em.list()
+            ret = t.em.list_exchanges()
             t.assertIs(ret, t.exchange_api.list.return_value)
             t.exchange_api.list.assert_called_with(
                 virtual_host='/',
@@ -134,7 +134,7 @@ class ExchangeManagerTests(TestCase):
             page_size = 999
             use_regex = True
 
-            ret = t.em.list(
+            ret = t.em.list_exchanges(
                 virtual_host=vhost,
                 name=name,
                 show_all=show_all,

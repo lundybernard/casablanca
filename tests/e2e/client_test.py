@@ -115,7 +115,7 @@ class RabbitmqClientTests(TestCase):
         exchange_manager = t.rc.manager.exchange
 
         # make sure we are not duplicating the exchange
-        assert exchange_manager.list(name=exchange_id) == []
+        assert exchange_manager.list_exchanges(name=exchange_id) == []
 
         # create a new exchange in the cache
         exchange = t.rc.exchanges[exchange_id]
@@ -123,7 +123,7 @@ class RabbitmqClientTests(TestCase):
         exchange.delcare()
 
         assert t.rc.exchanges[exchange_id].exists is True
-        exchange_list = exchange_manager.list(name=exchange_id)
+        exchange_list = exchange_manager.list_exchanges(name=exchange_id)
         assert len(exchange_id) == 1
         assert exchange_list[0]['name'] == exchange_id
 

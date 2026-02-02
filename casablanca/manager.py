@@ -71,7 +71,7 @@ class ExchangeManager:
         except _ApiError as e:
             raise ApiError(e)
 
-    def list(
+    def list_exchanges(
         self,
         virtual_host: str = '/',
         name: str | None = None,
