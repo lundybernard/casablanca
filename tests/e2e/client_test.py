@@ -120,11 +120,11 @@ class RabbitmqClientTests(TestCase):
         # create a new exchange in the cache
         exchange = t.rc.exchanges[exchange_id]
         # send the command to the rmq service to create it
-        exchange.delcare()
+        exchange.declare()
 
         assert t.rc.exchanges[exchange_id].exists is True
         exchange_list = exchange_manager.list_exchanges(name=exchange_id)
-        assert len(exchange_id) == 1
+        assert len(exchange_list) == 1
         assert exchange_list[0]['name'] == exchange_id
 
 

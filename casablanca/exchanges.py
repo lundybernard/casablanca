@@ -26,7 +26,7 @@ class Exchange:
         self.exchange_type = exchange_type
         self.passive = passive
         self.durable = durable
-        self.auto_delete = -auto_delete
+        self.auto_delete = auto_delete
         self.arguments = arguments
 
     def declare(self):
