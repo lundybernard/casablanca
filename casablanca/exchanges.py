@@ -1,4 +1,4 @@
-from .manager import ExchangeManager, ExchangeManagerProto
+from .manager import ExchangeManager
 
 from amqpstorm.management import ApiError
 
@@ -12,7 +12,7 @@ class Exchange:
     def __init__(
         self,
         name: str,
-        exchange_manager: ExchangeManagerProto,
+        exchange_manager: ExchangeManager,
         virtual_host: str = '/',
         exchange_type: str = 'fanout',
         passive: bool = False,

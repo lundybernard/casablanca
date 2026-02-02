@@ -9,10 +9,12 @@ SRC = 'casablanca.manager'
 
 class RabbitMQManagerTests(TestCase):
     _ManagementApi: Mock
+    ExchangeManager: Mock
 
     def setUp(t):
         patches = [
             '_ManagementApi',
+            'ExchangeManager',
         ]
         for target in patches:
             patcher = patch(f'{SRC}.{target}', autospec=True)
@@ -60,6 +62,11 @@ class RabbitMQManagerTests(TestCase):
 
         t.management_api.aliveness_test.return_value = {'status': 'not ok'}
         t.assertFalse(t.rmqm.online)
+
+    def test_exchange(t):
+        ret = t.rmqm.exchange
+        t.ExchangeManager.assert_called_with(t.management_api.exchange)
+        t.assertIs(ret, t.ExchangeManager.return_value)
 
     def test_management_api(t):
         mgr = RabbitMQManager()
@@ -149,3 +156,63 @@ class ExchangeManagerTests(TestCase):
                 use_regex=use_regex,
             )
             t.assertIs(ret, t.exchange_api.list.return_value)
+
+    def test_declare(t) -> None:
+        name = '=exchange-name='
+
+        with t.subTest('defaults'):
+            ret = t.em.declare(
+                name=name,
+            )
+            t.assertIs(ret, t.exchange_api.declare.return_value)
+            t.exchange_api.declare.assert_called_with(
+                exchange=name,
+                exchange_type='direct',
+                virtual_host='/',
+                passive=False,
+                durable=False,
+                auto_delete=False,
+                internal=False,
+                arguments=None,
+            )
+
+        with t.subTest('optional parameters'):
+            exchange_type = 'topic'
+            virtual_host = '=virtual-host='
+            passive = True
+            durable = True
+            auto_delete = True
+            internal = True
+            arguments = {'some': '=arguments='}
+
+            ret = t.em.declare(
+                name=name,
+                exchange_type=exchange_type,
+                virtual_host=virtual_host,
+                passive=passive,
+                durable=durable,
+                auto_delete=auto_delete,
+                internal=internal,
+                arguments=arguments,
+            )
+            t.assertIs(ret, t.exchange_api.declare.return_value)
+            t.exchange_api.declare.assert_called_with(
+                exchange=name,
+                exchange_type=exchange_type,
+                virtual_host=virtual_host,
+                passive=passive,
+                durable=durable,
+                auto_delete=auto_delete,
+                internal=internal,
+                arguments=arguments,
+            )
+
+    def test_delete(t) -> None:
+        name = '=exchange-name='
+        vhost = '=virtual-host='
+
+        t.em.delete(name=name, virtual_host=vhost)
+
+        t.exchange_api.delete.assert_called_with(
+            exchange=name, virtual_host=vhost
+        )

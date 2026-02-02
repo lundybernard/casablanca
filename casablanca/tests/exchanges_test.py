@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 from amqpstorm.management import ApiError
 
-from ..exchanges import Exchange, ExchangeManager
+from ..exchanges import Exchange
 
 
 SRC = 'casablanca.exchanges'
@@ -72,18 +72,18 @@ class ExchangesTests(TestCase):
     def test_declare(t) -> None:
         """Just passing the config through
         to the ExchangeManager's declare
-        method
+        method.
+        Takes no arguments only using attributes set on the Exchange object
         """
         t.exchange.declare()
         t.exchange_manager.declare.assert_called_with(
-            name=t.name,
-            exchange_api=t.exchange_manager,
-            virtual_host=t.virtual_host,
-            exchange_type=t.exchange_type,
-            passive=t.passive,
-            durable=t.durrable,
-            auto_delete=t.auto_delete,
-            arguments=t.arguments,
+            name=t.exchange.name,
+            virtual_host=t.exchange.virtual_host,
+            exchange_type=t.exchange.exchange_type,
+            passive=t.exchange.passive,
+            durable=t.exchange.durable,
+            auto_delete=t.exchange.auto_delete,
+            arguments=t.exchange.arguments,
         )
 
     def test_exists(t) -> None:
