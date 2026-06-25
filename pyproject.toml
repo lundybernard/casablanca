@@ -6,17 +6,12 @@ build-backend = 'hatchling.build'
 name = 'casablanca'
 version = '0.0.0'
 description = 'Record and replay tool for RabbitMQ '
-authors = [
-    { name = 'Lundy Bernard', email = 'lundy.bernard@gmail.com' },
-]
+authors = [{ name = 'Lundy Bernard', email = 'lundy.bernard@gmail.com' }]
 license = { file = 'LICENSE' }
 readme = 'README.md'
 requires-python = '>=3.10'
-dependencies = [
-    'batconf',
-    'pika',
-    'amqpstorm',
-]
+# manager.py uses amqpstorm.management; its [management] extra pulls requests
+dependencies = ['batconf', 'pika', 'amqpstorm[management]']
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -41,28 +36,40 @@ classifiers = [
 
 
 [dependency-groups]
-build = [
-    'hatch',
-    'twine',
-]
+test = ['coverage', 'pytest', 'pytest-cov']
+
+# Integration tests run against real external dependencies but need no
+# containers — same deps as unit tests for now.
+integration = [{ include-group = 'test' }]
+
+# e2e tests spin up a RabbitMQ docker container via testcontainers, so they
+# only run where docker is available (ubuntu). pywin32 (testcontainers ->
+# docker) ships no free-threaded wheel, so keeping testcontainers out of the
+# base groups lets unit tests install on free-threaded Windows. testcontainers
+# is its own group so the e2e array stays single-type (include-group only) —
+# setup-pixi's TOML parser rejects arrays that mix tables and strings.
+containers = ['testcontainers']
+e2e = [{ include-group = 'integration' }, { include-group = 'containers' }]
+
+lint = ['flake8']
+
+typecheck = ['mypy', 'types-requests', 'types-PyYAML', 'types-pika-ts']
+
+# convenience group for local development:
 dev = [
-    'coverage',
-    'flake8',
-    'mypy',
-    'pytest',
-    'pytest-cov',
-    'types-requests',
-    'types-PyYAML',
-    'types-pika-ts',
-    'testcontainers',
+    { include-group = 'e2e' },
+    { include-group = 'lint' },
+    { include-group = 'typecheck' },
 ]
+
+build = ['hatch', 'twine']
 docs = [
     'sphinx',
     'sphinx_autodoc_typehints',
     'sphinx_design',
     'sphinxext-opengraph',
     'sphinx-rtd-theme',
-    'matplotlib', # for social preview cards
+    'matplotlib',               # for social preview cards
     'myst_parser',
 ]
 
@@ -74,20 +81,25 @@ casablanca = 'casablanca.cli:BATCLI'
 # === Testing === #
 [tool.pytest.ini_options]
 log_level = 'INFO'
-addopts = '--cov=casablanca --cov-report=term --cov-report=xml'
+addopts = '--cov=casablanca --cov-report=term'
+cache_dir = '.cache/pytest'
 python_classes = '*Tests'
 python_files = ['*_test.py', '*_pytest.py']
+
+[tool.coverage.run]
+data_file = '.cache/coverage'
 
 [tool.coverage.report]
 fail_under = 100
 skip_covered = true
 show_missing = true
 skip_empty = true
-omit = [
-    "casablanca/tests/common_api_tests.py",
-]
+omit = ["casablanca/tests/common_api_tests.py"]
 
 # === Type Checking === #
+[tool.mypy]
+cache_dir = '.cache/mypy'
+
 [[tool.mypy.overrides]]
 module = "testcontainers.*"
 ignore_missing_imports = true
@@ -105,7 +117,25 @@ max-complexity = 10
 
 [tool.ruff]
 line-length = 79
+cache-dir = '.cache/ruff'
 [tool.ruff.format]
 quote-style = 'single'
 [tool.ruff.lint]
 ignore = ['F401']
+
+
+# === Pixi === #
+[tool.pixi.workspace]
+channels = ['conda-forge']
+platforms = ['linux-64', 'osx-arm64', 'osx-64', 'win-64']
+
+[tool.pixi.dependencies]
+python = '3.14.*'
+uv = '*'
+nox = '*'
+
+[tool.pixi.tasks]
+matrix = 'nox -s parallel -- -q'
+
+[tool.pixi.environments]
+default = { features = ["dev"], solve-group = "default" }
