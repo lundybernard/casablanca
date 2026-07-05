@@ -26,7 +26,9 @@ class RabbitMQInfo:
 
 @fixture(scope='session')
 def rabbitmq(request: FixtureRequest) -> Iterator[RabbitMQInfo]:
-    with RabbitMqContainer('rabbitmq:3-management').with_exposed_ports(
+    with RabbitMqContainer(
+        'docker.io/library/rabbitmq:3-management'
+    ).with_exposed_ports(
         5672, 15672
     ) as rmq:
         rmq.waiting_for(
@@ -99,6 +101,10 @@ class RabbitmqClientTests(TestCase):
             exchange=exchange,
             routing_key=route,
         )
+        # Publisher confirms: broker acks each basic_publish only after
+        # routing it to the bound queue, so the queue-length check below
+        # cannot run ahead of message delivery.
+        t.rc._channel.confirm_delivery()
 
         publisher = t.rc.new_publisher(
             exchange=exchange,

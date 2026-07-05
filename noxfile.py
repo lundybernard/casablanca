@@ -43,8 +43,8 @@ def e2e(session):
     # testcontainers spins up a RabbitMQ docker container; skip where docker
     # is unavailable (e.g. free-threaded Windows, where pywin32 also has no
     # wheel). integration tests need no containers, so they stay separate.
-    if not shutil.which('docker'):
-        session.skip('docker unavailable')
+    if not (shutil.which('docker') or shutil.which('podman')):
+        session.skip('docker/podman unavailable')
     session.install('coverage', 'pytest', 'pytest-cov', 'testcontainers')
     session.install('.')
     session.run('pytest', '--no-cov', 'tests/e2e')
