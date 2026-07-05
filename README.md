@@ -14,6 +14,14 @@ Pre-Alpha: the project is in active development,
 and core features are still being added.
 we will release v0.0.1 when it is ready for alpha testing.
 
+## Architecture Decisions
+
+Significant architectural decisions are recorded in
+[`docs/decisions/`](docs/decisions/). The
+[`0000-foundational/`](docs/decisions/0000-foundational/) group explains the
+core philosophy and why the library is shaped the way it is. Read the
+relevant ADRs before proposing changes to core behaviour.
+
 ## Features
 
 Casablanca provides the following key features:
