@@ -4,6 +4,8 @@ from unittest.mock import patch, Mock, create_autospec
 from ..client import (
     RabbitmqClient,
     ReadOneHandler,
+    Publisher,
+    _BlockingChannel,
     _ExchangeFactory,
     Exchange,
     ExchangeManager,
@@ -159,6 +161,33 @@ class RabbitmqClientTests(TestCase):
         channel.start_consuming.assert_called_once()
         t.assertIs(ret, handler.message)
 
+    def test_get_queue_length(t) -> None:
+        queue = '+queue+'
+        t.rc._channel.queue_declare.return_value.method.message_count = 2
+
+        ret = t.rc.get_queue_length(queue)
+
+        t.rc._channel.queue_declare.assert_called_with(
+            queue=queue, passive=True,
+        )
+        t.assertEqual(ret, 2)
+
+    @patch(f'{SRC}.Publisher', autospec=True)
+    def test_new_publisher(t, Publisher: Mock) -> None:
+        exchange = '+exchange+'
+        routing_key = '+routing_key+'
+
+        ret = t.rc.new_publisher(
+            exchange=exchange, routing_key=routing_key,
+        )
+
+        Publisher.assert_called_with(
+            channel=t.rc._channel,
+            exchange=exchange,
+            routing_key=routing_key,
+        )
+        t.assertIs(ret, Publisher.return_value)
+
 
 class ReadOneHandlerTests(TestCase):
     @patch(f'{SRC}._BlockingChannel', autospec=True)
@@ -182,6 +211,27 @@ class ReadOneHandlerTests(TestCase):
         t.assertIsNone(read_one_handler.message)
         read_one_handler.message = message
         t.assertEqual(message, read_one_handler.message)
+
+
+class PublisherTests(TestCase):
+    def setUp(t) -> None:
+        t.channel = create_autospec(_BlockingChannel, instance=True)
+        t.exchange = '+exchange+'
+        t.routing_key = '+routing_key+'
+        t.publisher = Publisher(
+            channel=t.channel,
+            exchange=t.exchange,
+            routing_key=t.routing_key,
+        )
+
+    def test_send(t) -> None:
+        message = '+message+'
+        t.publisher.send(message)
+        t.channel.basic_publish.assert_called_with(
+            exchange=t.exchange,
+            routing_key=t.routing_key,
+            body=message,
+        )
 
 
 class _ExchangeFactoryTests(TestCase):
