@@ -39,6 +39,15 @@ def unit(session):
 
 
 @nox.session(python=PYTHON_VERSIONS)
+def integration(session):
+    # in-process: real internal collaborators, vendor seams stubbed
+    # (ADR 08, amended) — no broker, no container required.
+    session.install('coverage', 'pytest', 'pytest-cov')
+    session.install('.')
+    session.run('pytest', '--no-cov', 'tests/integration')
+
+
+@nox.session(python=PYTHON_VERSIONS)
 def e2e(session):
     # testcontainers spins up a RabbitMQ docker container; skip where docker
     # is unavailable (e.g. free-threaded Windows, where pywin32 also has no
@@ -56,10 +65,10 @@ def typecheck(session):
         'mypy', 'types-requests', 'types-PyYAML', 'types-pika-ts',
     )
     session.install('.')
-    # tests/ holds only e2e, which needs pytest + testcontainers (e2e group);
-    # those aren't in the typecheck group, so e2e is not type-checked. Add
-    # tests/<dir> here when non-e2e (e.g. integration) test code lands.
-    session.run('mypy', 'casablanca')
+    # tests/e2e needs pytest + testcontainers (e2e group); those aren't in
+    # the typecheck group, so e2e is not type-checked. tests/integration
+    # imports only casablanca + stdlib, so it is.
+    session.run('mypy', 'casablanca', 'tests/integration')
 
 
 def _summarize_failure(output: str) -> str:
