@@ -134,8 +134,13 @@ python = '3.14.*'
 uv = '*'
 nox = '*'
 
+# Install project source in editable mode
+[tool.pixi.pypi-dependencies]
+casablanca = { path = '.', editable = true }
+
 [tool.pixi.tasks]
 matrix = 'nox -s parallel -- -q'
+int = 'pytest --no-cov tests/integration'
 
 [tool.pixi.environments]
 default = { features = ["dev"], solve-group = "default" }
