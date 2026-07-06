@@ -15,3 +15,4 @@ before proposing changes to core behaviour.
 | # | Topic | Status |
 | ---- | ----- | ------ |
 | 0000 | [Foundational decisions](0000-foundational/README.md) | Accepted |
+| 0001 | [Local e2e container backend: Podman + Docker/compatible](0001-podman-rootless-e2e-backend.md) | Proposed |

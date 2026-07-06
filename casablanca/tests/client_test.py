@@ -1,7 +1,16 @@
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, create_autospec
 
-from ..client import RabbitmqClient, ReadOneHandler
+from ..client import (
+    RabbitmqClient,
+    ReadOneHandler,
+    Publisher,
+    _BlockingChannel,
+    _ExchangeFactory,
+    Exchange,
+    ExchangeManager,
+    _ExchangeCache,
+)
 
 
 SRC = 'casablanca.client'
@@ -67,6 +76,29 @@ class RabbitmqClientTests(TestCase):
         t.assertEqual(rc.username, username)
         t.assertEqual(rc.password, password)
 
+    @patch(f'{SRC}.Exchange', autospec=True)
+    def test_exchanges(t, Exchange: Mock):
+        """referencing an exchange in the cache creates and returns a new
+        instance
+        """
+        e1 = t.rc.exchanges['E1']
+        Exchange.assert_called_with(
+            name='E1',
+            exchange_manager=t.rc.exchange_manager,
+        )
+        t.assertIs(e1, Exchange.return_value)
+        e2 = t.rc.exchanges['E2']
+        Exchange.assert_called_with(
+            name='E2',
+            exchange_manager=t.rc.exchange_manager,
+        )
+        t.assertIs(e2, Exchange.return_value)
+
+        t.assertDictEqual(t.rc.exchanges, {'E1': e1, 'E2': e2})
+
+    def test_exchange_manager(t):
+        t.assertIs(t.rc.exchange_manager, t.rc.manager.exchange)
+
     def test_manager(t):
         t.assertIs(t.rc.manager, t.RabbitMQManager.return_value)
         t.RabbitMQManager.assert_called_with(
@@ -129,6 +161,33 @@ class RabbitmqClientTests(TestCase):
         channel.start_consuming.assert_called_once()
         t.assertIs(ret, handler.message)
 
+    def test_get_queue_length(t) -> None:
+        queue = '+queue+'
+        t.rc._channel.queue_declare.return_value.method.message_count = 2
+
+        ret = t.rc.get_queue_length(queue)
+
+        t.rc._channel.queue_declare.assert_called_with(
+            queue=queue, passive=True,
+        )
+        t.assertEqual(ret, 2)
+
+    @patch(f'{SRC}.Publisher', autospec=True)
+    def test_new_publisher(t, Publisher: Mock) -> None:
+        exchange = '+exchange+'
+        routing_key = '+routing_key+'
+
+        ret = t.rc.new_publisher(
+            exchange=exchange, routing_key=routing_key,
+        )
+
+        Publisher.assert_called_with(
+            channel=t.rc._channel,
+            exchange=exchange,
+            routing_key=routing_key,
+        )
+        t.assertIs(ret, Publisher.return_value)
+
 
 class ReadOneHandlerTests(TestCase):
     @patch(f'{SRC}._BlockingChannel', autospec=True)
@@ -152,3 +211,64 @@ class ReadOneHandlerTests(TestCase):
         t.assertIsNone(read_one_handler.message)
         read_one_handler.message = message
         t.assertEqual(message, read_one_handler.message)
+
+
+class PublisherTests(TestCase):
+    def setUp(t) -> None:
+        t.channel = create_autospec(_BlockingChannel, instance=True)
+        t.exchange = '+exchange+'
+        t.routing_key = '+routing_key+'
+        t.publisher = Publisher(
+            channel=t.channel,
+            exchange=t.exchange,
+            routing_key=t.routing_key,
+        )
+
+    def test_send(t) -> None:
+        message = '+message+'
+        t.publisher.send(message)
+        t.channel.basic_publish.assert_called_with(
+            exchange=t.exchange,
+            routing_key=t.routing_key,
+            body=message,
+        )
+
+
+class _ExchangeFactoryTests(TestCase):
+    @patch(f'{SRC}.Exchange', autospec=True)
+    def test_exchange_factory(t, Exchange: Mock):
+        """Note, not totally isolated,
+        due to the way Exchange is part of the factory, it cant be patched out,
+        but it only touches external dependencies through the exchange manger
+        api, so its good enough
+        """
+        exchange_manager = Mock(ExchangeManager, autospec=True)
+        ef = _ExchangeFactory(
+            exchange_class=Exchange, exchange_manager=exchange_manager
+        )
+        ret = ef(name='exchange-name')
+
+        t.assertIs(ret, Exchange.return_value)
+        Exchange.assert_called_with(
+            name='exchange-name', exchange_manager=exchange_manager
+        )
+
+
+class _ExchangeCacheTests(TestCase):
+    def test_exchange_cache(t):
+        exchange_factory = Mock()
+
+        ec = _ExchangeCache(factory=exchange_factory)
+
+        exchange_1 = ec['e1']
+        t.assertIs(exchange_1, exchange_factory.return_value)
+        exchange_factory.assert_called_with(name='e1')
+
+        # check Idempotency
+        exchange_1_again = ec['e1']
+        exchange_factory.assert_called_once_with(name='e1')
+        t.assertIs(exchange_1, exchange_1_again)
+
+        exchange_2 = ec['e2']
+        t.assertIs(exchange_2, exchange_factory.return_value)
+        exchange_factory.assert_called_with(name='e2')

@@ -26,7 +26,9 @@ class RabbitMQInfo:
 
 @fixture(scope='session')
 def rabbitmq(request: FixtureRequest) -> Iterator[RabbitMQInfo]:
-    with RabbitMqContainer('rabbitmq:3-management').with_exposed_ports(
+    with RabbitMqContainer(
+        'docker.io/library/rabbitmq:3-management'
+    ).with_exposed_ports(
         5672, 15672
     ) as rmq:
         rmq.waiting_for(
@@ -49,10 +51,10 @@ def rabbitmq(request: FixtureRequest) -> Iterator[RabbitMQInfo]:
 
 
 @mark.usefixtures('rabbitmq')
-class FeatureTests(TestCase):
+class RabbitmqClientTests(TestCase):
     @fixture(autouse=True)
     def _wire_client_from_container_info(t, rabbitmq: RabbitMQInfo):
-        t.test_queue = 'tests.e2e.FeatureTests'
+        t.test_queue = 'tests.e2e.RabbitmqClientTests'
         cfg = get_config().rabbitmq
 
         cfg.hostname = rabbitmq.host
@@ -76,6 +78,60 @@ class FeatureTests(TestCase):
         t.rc.publish(message, queue=t.test_queue)
         ret = t.rc.read_one(queue=t.test_queue)
         t.assertEqual(ret, bytes(message, 'utf-8'))
+
+    def test_publisher(t):
+        """The publisher is used to send messages
+        to the exchange it is bound to.  It is long-lived and used to send
+        multiple messages over time.
+        """
+        prefix = 'tests.e2e.RabbitmqClientTests'
+        exchange = f'{prefix}.exhange'
+        queue = f'{prefix}.queue'
+        route = 'test_publisher'
+
+        # Before we can publish anything we need to declare an exchange
+        # and bind it to a queue, so we can check that the messages we publish
+        # are delivered.
+
+        t.rc.exchanges[exchange].declare()  # cache exchanges on the client
+        # TODO: wrap the direct channel manipulation in an interface
+        t.rc._channel.queue_declare(queue)
+        t.rc._channel.queue_bind(
+            queue=queue,
+            exchange=exchange,
+            routing_key=route,
+        )
+        # Publisher confirms: broker acks each basic_publish only after
+        # routing it to the bound queue, so the queue-length check below
+        # cannot run ahead of message delivery.
+        t.rc._channel.confirm_delivery()
+
+        publisher = t.rc.new_publisher(
+            exchange=exchange,
+            routing_key=route,
+        )
+        publisher.send('hello world')
+        publisher.send('hello dave')
+
+        assert t.rc.get_queue_length(queue) == 2
+
+    def test_creating_an_exchange(t):
+        """create named exchanges and cache them on the rmq client"""
+        exchange_id = 'test.e2e.exchange'
+        exchange_manager = t.rc.manager.exchange
+
+        # make sure we are not duplicating the exchange
+        assert exchange_manager.list_exchanges(name=exchange_id) == []
+
+        # create a new exchange in the cache
+        exchange = t.rc.exchanges[exchange_id]
+        # send the command to the rmq service to create it
+        exchange.declare()
+
+        assert t.rc.exchanges[exchange_id].exists is True
+        exchange_list = exchange_manager.list_exchanges(name=exchange_id)
+        assert len(exchange_list) == 1
+        assert exchange_list[0]['name'] == exchange_id
 
 
 class ConfigTests(TestCase):

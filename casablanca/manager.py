@@ -1,6 +1,10 @@
+from __future__ import annotations
+from typing import Protocol
 from functools import cached_property
 
+
 from amqpstorm.management import ManagementApi as _ManagementApi
+from amqpstorm.management.exception import ApiError as _ApiError
 
 
 class RabbitMQManager:
@@ -25,6 +29,11 @@ class RabbitMQManager:
             return True
         return False
 
+    @property
+    def exchange(self) -> ExchangeManager:
+        # Expose the exchange manager from the management api
+        return ExchangeManager(self._management_api.exchange)
+
     @cached_property
     def _management_api(self) -> _ManagementApi:
         return _ManagementApi(
@@ -34,5 +43,93 @@ class RabbitMQManager:
         )
 
     @cached_property
-    def _api_url(self):
+    def _api_url(self) -> str:
         return f'http://{self.host_name}:{self.admin_port}'
+
+
+class ExchangeApiProto(Protocol):
+    def get(self, exchange: str, virtual_host: str) -> dict: ...
+    def list(
+        self,
+        virtual_host: str,
+        show_all: bool,
+        name: str | None,
+        page_size: int,
+        use_regex: bool,
+    ) -> list[dict]: ...
+    def declare(
+        self,
+        exchange: str,
+        exchange_type: str,
+        virtual_host: str,
+        passive: bool,
+        durable: bool,
+        auto_delete: bool,
+        internal: bool,
+        arguments: dict | None,
+    ) -> dict | None: ...
+    def delete(self, exchange: str, virtual_host: str) -> dict: ...
+
+
+class ExchangeManager:
+    """Wrapper class for the amqp exchange management API"""
+
+    def __init__(self, exchange_api: ExchangeApiProto):
+        self._exchange_api = exchange_api
+
+    def get(self, exchange_name: str, virtual_host: str) -> dict:
+        try:
+            return self._exchange_api.get(
+                exchange=exchange_name, virtual_host=virtual_host
+            )
+        except _ApiError as e:
+            raise ApiError(e)
+
+    def list_exchanges(
+        self,
+        virtual_host: str = '/',
+        name: str | None = None,
+        show_all: bool = False,
+        page_size: int = 100,
+        use_regex: bool = False,
+    ) -> list[dict]:
+        return self._exchange_api.list(
+            virtual_host=virtual_host,
+            name=name,
+            show_all=show_all,
+            page_size=page_size,
+            use_regex=use_regex,
+        )
+
+    def declare(
+        self,
+        name: str,
+        exchange_type: str = 'direct',
+        virtual_host: str = '/',
+        passive: bool = False,
+        durable: bool = False,
+        auto_delete: bool = False,
+        internal: bool = False,
+        arguments: dict | None = None,
+    ) -> dict | None:
+        """
+        exchange_type: one of: direct, fanout, topic, headers
+        """
+        return self._exchange_api.declare(
+            exchange=name,
+            exchange_type=exchange_type,
+            virtual_host=virtual_host,
+            passive=passive,
+            durable=durable,
+            auto_delete=auto_delete,
+            internal=internal,
+            arguments=arguments,
+        )
+
+    def delete(self, name: str, virtual_host: str = '/') -> dict:
+        return self._exchange_api.delete(
+            exchange=name, virtual_host=virtual_host
+        )
+
+
+class ApiError(Exception): ...
