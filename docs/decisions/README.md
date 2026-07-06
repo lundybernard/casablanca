@@ -16,3 +16,4 @@ before proposing changes to core behaviour.
 | ---- | ----- | ------ |
 | 0000 | [Foundational decisions](0000-foundational/README.md) | Accepted |
 | 0001 | [Local e2e container backend: Podman + Docker/compatible](0001-podman-rootless-e2e-backend.md) | Proposed |
+| 0002 | [Exchange tap: exclusive server-named queue bound to an existing exchange](0002-exchange-tap-exclusive-queue.md) | Proposed |
