@@ -1,3 +1,5 @@
+from contextlib import redirect_stdout
+from io import StringIO
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
@@ -114,11 +116,16 @@ class TestCommands(TestCase):
     @patch(f'{SRC}.log', autospec=True)
     def test_set_log_level(t, log):
         with t.subTest('default to ERROR'):
-            args = argparse.Namespace(loglevel=logging.INFO)
-            Commands.set_log_level(args)
-            log.setLevel.assert_called_with(logging.INFO)
+            args = argparse.Namespace(loglevel=None)
+            with redirect_stdout(StringIO()) as stdout:
+                Commands.set_log_level(args)
+            log.setLevel.assert_called_with(logging.ERROR)
+            t.assertEqual(stdout.getvalue(), '')
 
         with t.subTest('set given value'):
+            log.reset_mock()
             args = argparse.Namespace(loglevel=logging.INFO)
-            Commands.set_log_level(args)
+            with redirect_stdout(StringIO()) as stdout:
+                Commands.set_log_level(args)
             log.setLevel.assert_called_with(logging.INFO)
+            t.assertEqual(stdout.getvalue(), '')

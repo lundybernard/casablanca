@@ -124,11 +124,7 @@ class Commands:
 
     @staticmethod
     def set_log_level(conf):
-        print(conf)
-
         if conf.loglevel:
             log.setLevel(conf.loglevel)
         else:
             log.setLevel(logging.ERROR)
-
-        print(log.level)
